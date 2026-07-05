@@ -1,0 +1,25 @@
+{
+  "name": "influa",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "dev": "concurrently -n web,worker -c blue,green \"pnpm --filter @influa/web dev\" \"pnpm --filter @influa/worker dev\"",
+    "db:up": "docker compose up -d",
+    "db:migrate": "tsx packages/core/src/db/migrate.ts",
+    "grant": "tsx scripts/grant-credits.ts",
+    "smoke": "tsx scripts/smoke-pipeline.ts",
+    "tunnel": "cloudflared tunnel --url http://localhost:3000"
+  },
+  "dependencies": {
+    "@influa/core": "workspace:*"
+  },
+  "devDependencies": {
+    "concurrently": "^9.1.0",
+    "dotenv": "^16.4.7",
+    "pg-boss": "^10.4.2",
+    "playwright-core": "^1.61.1",
+    "tsx": "^4.19.2",
+    "typescript": "^5.7.2"
+  },
+  "packageManager": "pnpm@10.33.3+sha512.a19744364a7e248b92657a4ca5973f9354d21caf982579674b1c539f32c7420c47138ad8b1254df07aba9bc782d9b3029e3db34d5dbff974326eb74dac8ff489"
+}

@@ -1,0 +1,20 @@
+services:
+  postgres:
+    image: postgres:16-alpine
+    container_name: influa-postgres
+    environment:
+      POSTGRES_USER: influa
+      POSTGRES_PASSWORD: influa
+      POSTGRES_DB: influa
+    ports:
+      - "5433:5432" # 5433 no host para não conflitar com Postgres local
+    volumes:
+      - influa_pgdata:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U influa"]
+      interval: 5s
+      timeout: 3s
+      retries: 10
+
+volumes:
+  influa_pgdata:

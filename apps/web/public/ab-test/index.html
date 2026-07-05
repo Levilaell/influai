@@ -1,0 +1,76 @@
+<!doctype html>
+<html lang="pt-BR">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>A/B modelos de avatar — Influai</title>
+<style>
+  :root { color-scheme: dark; }
+  * { box-sizing: border-box; }
+  body { margin: 0; background: #0d0d0f; color: #f2f1ec; font-family: Arial, Helvetica, sans-serif; padding: 32px 20px 80px; }
+  .wrap { max-width: 1100px; margin: 0 auto; }
+  h1 { font-size: 24px; margin: 0 0 6px; }
+  h1 span { color: #d4ff3f; }
+  p.sub { color: #9b9a93; margin: 0 0 28px; line-height: 1.6; }
+  .persona { margin-bottom: 40px; }
+  .persona h2 { font-size: 18px; border-left: 3px solid #d4ff3f; padding-left: 10px; margin: 0 0 14px; }
+  .grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 16px; }
+  @media (max-width: 800px) { .grid { grid-template-columns: 1fr; } }
+  .card { background: #141416; border: 1px solid #26262b; border-radius: 14px; overflow: hidden; }
+  .card video { width: 100%; display: block; background: #000; aspect-ratio: 9/16; object-fit: cover; }
+  .card .meta { padding: 10px 12px; }
+  .card .name { font-weight: 700; font-size: 14px; }
+  .card .price { color: #9b9a93; font-size: 12px; }
+  .card .price b { color: #d4ff3f; }
+  .best { color: #d4ff3f; font-size: 11px; }
+  .note { color: #66655f; font-size: 12px; margin-top: 24px; line-height: 1.6; }
+  .fail { padding: 40px 12px; text-align: center; color: #e0685f; font-size: 13px; }
+</style>
+</head>
+<body>
+<div class="wrap">
+  <h1>A/B — modelos de avatar <span>·</span> Influai</h1>
+  <p class="sub">
+    Mesmo keyframe (cena de cafeteria + pose expressiva) e o MESMO áudio, gerados em 3 modelos.
+    Dê play com som e compare: <b>lip-sync</b>, <b>movimento/gestos</b>, <b>expressão</b> e <b>fidelidade do rosto</b>.
+    Não olhe só a boca — veja o quanto cada um se mexe.
+  </p>
+
+  <div class="persona">
+    <h2>Rafa — realista</h2>
+    <div class="grid" id="grid-rafa"></div>
+  </div>
+
+  <div class="persona">
+    <h2>Lia — animada (3D)</h2>
+    <div class="grid" id="grid-lia"></div>
+  </div>
+
+  <p class="note">
+    Preços por segundo no Atlas: InfiniteTalk $0.030 · Kling v2.6 std $0.048 · OmniHuman 1.5 $0.060.
+    Num vídeo de ~20s isso é a maior parte do custo — a escolha aqui define a margem.
+    Se algum quadro estiver preto, aquele modelo falhou na geração (veja o log).
+  </p>
+</div>
+
+<script>
+  const MODELS = [
+    { key: "infinitetalk", name: "InfiniteTalk", price: "$0.030/s", best: "mais barato" },
+    { key: "kling", name: "Kling v2.6 std", price: "$0.048/s", best: "atual" },
+    { key: "omnihuman", name: "OmniHuman 1.5", price: "$0.060/s", best: "premium" },
+  ];
+  for (const slug of ["rafa", "lia"]) {
+    const grid = document.getElementById("grid-" + slug);
+    for (const m of MODELS) {
+      const card = document.createElement("div");
+      card.className = "card";
+      card.innerHTML =
+        '<video src="' + slug + "_" + m.key + '.mp4" controls loop playsinline preload="metadata"></video>' +
+        '<div class="meta"><div class="name">' + m.name + ' <span class="best">' + m.best + '</span></div>' +
+        '<div class="price">' + m.price + '</div></div>';
+      grid.appendChild(card);
+    }
+  }
+</script>
+</body>
+</html>

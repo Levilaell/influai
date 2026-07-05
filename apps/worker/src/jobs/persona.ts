@@ -1,0 +1,161 @@
+// Jobs do Persona Studio:
+//   persona-candidates: 4 rostos candidatos (text-to-image)
+//   persona-sheet:      candidato escolhido vira 'front' + 3 variações identity-locked
+// Créditos: hold por ref ('persona:<id>:candidates:<n>' | 'persona:<id>:sheet');
+// falha terminal (DLQ) devolve tudo; sucesso devolve a sobra.
+import type PgBoss from "pg-boss";
+import { step, jobCostUsd } from "../steps.ts";
+import { setPersonaStatus } from "../progress.ts";
+import { publicAssetUrl, getPersonaAssets } from "../assets.ts";
+import { getPool } from "@influa/core/db/client";
+import { getStorage } from "@influa/core/storage/index";
+import { genImage, downloadToBuffer } from "@influa/core/providers/index";
+import { releaseRefHold } from "@influa/core/credits/ledger";
+import { faceStyle } from "@influa/core/pipeline/face";
+import { PRICING, usdToCredits, DEFAULTS } from "@influa/core/config";
+
+const CANDIDATE_LIGHTS = [
+  "neutral friendly expression, soft natural light",
+  "slight warm smile, soft window light",
+  "confident subtle look, studio softbox light",
+  "gentle smile, golden hour warm light",
+];
+
+const SHEET_POSES: Record<string, string> = {
+  three_quarter: "three-quarter view portrait, slight smile",
+  profile: "profile view portrait",
+  speaking: "mid-speech expression, talking to camera, hands slightly visible, upper body",
+};
+
+async function loadPersona(personaId: string) {
+  const { rows } = await getPool().query("select * from personas where id = $1", [personaId]);
+  return rows[0];
+}
+
+async function insertAsset(opts: {
+  personaId: string;
+  kind: string;
+  idx: number;
+  storageKey: string;
+  providerUrl: string;
+}) {
+  await getPool().query(
+    `insert into persona_assets (persona_id, kind, idx, storage_key, provider_url)
+     values ($1, $2, $3, $4, $5)`,
+    [opts.personaId, opts.kind, opts.idx, opts.storageKey, opts.providerUrl]
+  );
+}
+
+/** Devolve todos os holds não-liberados de uma persona (usado em falha terminal). */
+async function releaseAllPersonaHolds(personaId: string, note: string) {
+  const { rows } = await getPool().query(
+    `select l.ref from credit_ledger l
+     where l.persona_id = $1 and l.entry_type = 'hold'
+       and not exists (
+         select 1 from credit_ledger r where r.ref = l.ref and r.entry_type = 'hold_release'
+       )`,
+    [personaId]
+  );
+  for (const { ref } of rows) await releaseRefHold(ref, note);
+}
+
+export async function registerPersonaJobs(boss: PgBoss) {
+  for (const q of ["persona-candidates", "persona-sheet"]) {
+    await boss.createQueue(`${q}-dlq`);
+    await boss.createQueue(q, {
+      retryLimit: 2,
+      retryDelay: 30,
+      retryBackoff: true,
+      expireInSeconds: 900,
+      deadLetter: `${q}-dlq`,
+    } as any);
+  }
+
+  // ── 4 rostos candidatos ────────────────────────────────────────────
+  await boss.work("persona-candidates", { batchSize: 1 }, async ([job]) => {
+    const { personaId, batch } = job.data as { personaId: string; batch: number };
+    const jobKey = `persona:${personaId}:candidates:${batch}`;
+    const persona = await loadPersona(personaId);
+    if (!persona) return;
+
+    await setPersonaStatus(personaId, "candidates_generating");
+    const storage = getStorage();
+
+    for (let i = 0; i < DEFAULTS.personaCandidates; i++) {
+      const fs = faceStyle(persona.face_style);
+      await step(jobKey, `candidate_${i}`, async () => {
+        const providerUrl = await genImage({
+          prompt: `${fs.render} portrait of ${persona.description}. ${CANDIDATE_LIGHTS[i]}. ${fs.texture}, looking at camera, plain neutral background, social media creator aesthetic. Vertical 9:16 composition.`,
+        });
+        const key = `personas/${personaId}/candidate_${batch}_${i}.jpg`;
+        await storage.put(key, await downloadToBuffer(providerUrl));
+        await insertAsset({ personaId, kind: "candidate", idx: i, storageKey: key, providerUrl });
+        return { output: { key, providerUrl }, costUsd: PRICING.imagePerUnit };
+      });
+    }
+
+    const used = usdToCredits(await jobCostUsd(jobKey));
+    await releaseRefHold(jobKey, "sobra da estimativa (candidatos)", used);
+    await setPersonaStatus(personaId, "candidates_ready");
+  });
+
+  await boss.work("persona-candidates-dlq", { batchSize: 1 }, async ([job]) => {
+    const { personaId } = (job.data as any) ?? {};
+    if (!personaId) return;
+    await releaseAllPersonaHolds(personaId, "falha na geração de candidatos");
+    await setPersonaStatus(personaId, "failed", "Falha ao gerar os rostos. Créditos devolvidos.");
+  });
+
+  // ── Character sheet identity-locked ────────────────────────────────
+  await boss.work("persona-sheet", { batchSize: 1 }, async ([job]) => {
+    const { personaId, chosenAssetId } = job.data as { personaId: string; chosenAssetId: string };
+    const jobKey = `persona:${personaId}:sheet`;
+    const persona = await loadPersona(personaId);
+    if (!persona) return;
+
+    await setPersonaStatus(personaId, "sheet_generating");
+    const storage = getStorage();
+
+    // Promove o candidato escolhido a rosto oficial
+    await step(jobKey, "promote", async () => {
+      await getPool().query(
+        "update persona_assets set kind = 'front', idx = 0 where id = $1 and persona_id = $2",
+        [chosenAssetId, personaId]
+      );
+      return { output: { chosenAssetId } };
+    });
+
+    const [front] = await getPersonaAssets(personaId, ["front"]);
+    if (!front) throw new Error("Asset 'front' não encontrado após promote");
+    const frontUrl = await publicAssetUrl(front);
+
+    const sheetStyle = faceStyle(persona.face_style);
+    let idx = 1;
+    for (const [kind, pose] of Object.entries(SHEET_POSES)) {
+      const i = idx++;
+      await step(jobKey, kind, async () => {
+        const providerUrl = await genImage({
+          prompt: `Same character as in the reference image, identical face and hair. ${pose}. Same style and lighting, plain neutral background, ${sheetStyle.render}, vertical 9:16 composition.`,
+          referenceImages: [frontUrl],
+        });
+        const key = `personas/${personaId}/${kind}.jpg`;
+        await storage.put(key, await downloadToBuffer(providerUrl));
+        await insertAsset({ personaId, kind, idx: i, storageKey: key, providerUrl });
+        return { output: { key, providerUrl }, costUsd: PRICING.imagePerUnit };
+      });
+    }
+
+    const used = usdToCredits(await jobCostUsd(jobKey));
+    await releaseRefHold(jobKey, "sobra da estimativa (character sheet)", used);
+    await setPersonaStatus(personaId, "ready");
+  });
+
+  await boss.work("persona-sheet-dlq", { batchSize: 1 }, async ([job]) => {
+    const { personaId } = (job.data as any) ?? {};
+    if (!personaId) return;
+    await releaseAllPersonaHolds(personaId, "falha no character sheet");
+    await setPersonaStatus(personaId, "failed", "Falha ao gerar o character sheet. Créditos devolvidos.");
+  });
+
+  console.log("[worker] jobs de persona registrados");
+}

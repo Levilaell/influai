@@ -1,0 +1,16 @@
+node_modules/
+.env
+.next/
+data/
+dist/
+*.tsbuildinfo
+prototype/output/
+prototype/personas/*.json
+prototype/.env
+.env.local
+.env.*.local
+*.log
+.DS_Store
+.turbo/
+scripts/_*.mjs
+.vercel

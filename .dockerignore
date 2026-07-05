@@ -1,0 +1,12 @@
+node_modules
+**/node_modules
+.next
+**/.next
+.env
+.env.*
+.git
+data
+uploads
+music
+*.log
+scripts/_*.mjs
