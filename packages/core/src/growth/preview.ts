@@ -4,7 +4,7 @@
 import Anthropic from "@anthropic-ai/sdk";
 import "../env.ts";
 
-export type PreviewPersona = { name: string; tagline: string; look: string };
+export type PreviewPersona = { name: string; tagline: string; look: string; gender: "masculina" | "feminina" };
 export type PreviewIdea = { title: string; hook: string };
 export type PreviewScript = { title: string; lines: string[]; hashtags: string[] };
 export type Preview = { niche: string; persona: PreviewPersona; ideas: PreviewIdea[]; script: PreviewScript };
@@ -12,7 +12,7 @@ export type Preview = { niche: string; persona: PreviewPersona; ideas: PreviewId
 const SYSTEM = `Você é estrategista de conteúdo viral (Reels/TikTok/Shorts) em português brasileiro. A partir do NICHO/negócio informado, você cria a "máquina de conteúdo" que um influenciador de IA rodaria para esse negócio.
 Regras:
 - Tudo específico e afiado para o nicho — nada genérico. Fale a língua do dono desse negócio.
-- persona: um influenciador de IA que faria sentido para essa marca (name = nome brasileiro; tagline = bordão/posicionamento em 1 linha; look = descrição visual curta em português: idade aproximada, estilo, ambiente).
+- persona: um influenciador de IA que faria sentido para essa marca (name = nome brasileiro; tagline = bordão/posicionamento em 1 linha; look = descrição visual curta em português: idade aproximada, estilo, ambiente; gender = "masculina" ou "feminina", COERENTE com o name e o look — isso define a voz do vídeo).
 - ideas: 5 ideias de vídeo com título chamativo + hook (frase de abertura dos 2 primeiros segundos). Use formatos comprovados (mito x verdade, erro comum, listicle, bastidores, comparação).
 - script: 1 roteiro pronto (title + 4 falas curtas em "lines" + 4-6 hashtags sem #). Cada fala ~1 frase, com pontuação natural. A última fala é um CTA sutil.
 - NUNCA use emojis. Acentuação correta e completa (você, não, São, é — nunca voce/nao/Sao).`;
@@ -22,8 +22,8 @@ const SCHEMA = {
   properties: {
     persona: {
       type: "object",
-      properties: { name: { type: "string" }, tagline: { type: "string" }, look: { type: "string" } },
-      required: ["name", "tagline", "look"], additionalProperties: false,
+      properties: { name: { type: "string" }, tagline: { type: "string" }, look: { type: "string" }, gender: { type: "string", enum: ["masculina", "feminina"] } },
+      required: ["name", "tagline", "look", "gender"], additionalProperties: false,
     },
     ideas: {
       type: "array",

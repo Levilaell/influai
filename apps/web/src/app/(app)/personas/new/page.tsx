@@ -4,6 +4,7 @@ import { useActionState } from "react";
 import { createPersonaAction } from "@/actions/personas";
 import { FACE_STYLES } from "@influa/core/pipeline/face";
 import { Button, Card, ErrorText, Input, Label, Textarea } from "@/components/ui";
+import { IdentityPresets } from "./identity-presets";
 import { VoicePicker } from "./voice-picker";
 
 export default function NewPersonaPage({ searchParams }: { searchParams: Promise<{ brand?: string }> }) {
@@ -47,6 +48,8 @@ export default function NewPersonaPage({ searchParams }: { searchParams: Promise
           </div>
           <div>
             <Label htmlFor="description">Aparência do rosto</Label>
+            <p className="mb-2 text-xs text-muted">Escolha um estilo pronto ou descreva você mesmo:</p>
+            <IdentityPresets />
             <Textarea
               id="description"
               name="description"

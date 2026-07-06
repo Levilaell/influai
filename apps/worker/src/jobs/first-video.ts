@@ -13,7 +13,7 @@ import { generateNarration, generateAvatarTake } from "@influa/core/pipeline/ava
 import { assembleAvatar } from "@influa/core/pipeline/assemble";
 import { sendEmail, emailTemplate } from "@influa/core/email/index";
 import { generatePreview } from "@influa/core/growth/preview";
-import { CURATED_VOICES } from "@influa/core/config";
+import { pickVoiceForGender } from "@influa/core/config";
 
 function slug(s: string): string {
   return (s || "persona").toLowerCase().normalize("NFD").replace(/[̀-ͯ]/g, "").replace(/[^a-z0-9]+/g, "-").replace(/^-|-$/g, "").slice(0, 40);
@@ -51,8 +51,11 @@ async function handleFirstVideo(data: { userId: string; niche?: string; preview?
   await pool.query("insert into brand_memory (brand_id) values ($1) on conflict do nothing", [brandId]);
 
   // 2. Persona (rosto único, já 'ready' — sem os 4 candidatos + sheet)
-  const voice = CURATED_VOICES[0].id;
   const personaName = persona.name || "Seu influenciador";
+  // Voz coerente com o gênero da persona (evita rosto masculino + voz feminina).
+  const gender: "masculina" | "feminina" = persona.gender === "masculina" ? "masculina" : "feminina";
+  const seed = personaName.split("").reduce((a: number, c: string) => a + c.charCodeAt(0), 0);
+  const voice = pickVoiceForGender(gender, seed);
   const { rows: p } = await pool.query(
     `insert into personas (user_id, brand_id, name, slug, description, niche, voice_id, moderation, face_style, status)
      values ($1,$2,$3,$4,$5,$6,$7,$8,'realista','ready') returning id`,

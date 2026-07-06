@@ -172,7 +172,23 @@ export function BrandDashboard({
         </div>
       )}
 
-      {tab === "Vídeos" && (
+      {tab === "Vídeos" && !profile && (
+        <Card className="space-y-3 py-10 text-center">
+          <p className="font-[family-name:var(--font-display)] text-xl">Crie o Cérebro da Marca primeiro 🧠</p>
+          <p className="mx-auto max-w-md text-muted">
+            Sem o cérebro, a IA não tem informações do seu negócio pra criar bons vídeos. Envie um print do
+            Instagram/site ou escreva um texto — leva 30s.
+          </p>
+          <a
+            href={`/brands/${brand.id}?tab=Cérebro`}
+            className="inline-block rounded-full bg-accent px-6 py-2.5 text-sm font-bold text-accent-ink"
+          >
+            Criar o Cérebro →
+          </a>
+        </Card>
+      )}
+
+      {tab === "Vídeos" && profile && (
         <div className="space-y-5">
           <div className="flex flex-wrap items-center justify-end gap-3">
             {draftCount > 0 && <EnqueueAll brandId={brand.id} count={draftCount} />}

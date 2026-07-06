@@ -4,7 +4,7 @@ import { AuthError } from "next-auth";
 import { redirect } from "next/navigation";
 import { getPool } from "@influa/core/db/client";
 import { grantCredits } from "@influa/core/credits/ledger";
-import { sendJob } from "@/lib/queue";
+import { autoStartFirstPersona } from "@/lib/first-persona";
 import { env } from "@influa/core/env";
 import { registerInput } from "@influa/core/schemas";
 import { sendEmail, emailTemplate } from "@influa/core/email/index";
@@ -55,25 +55,27 @@ export async function registerAction(_prev: FormState, formData: FormData): Prom
     if (err?.code === "23505") return { error: "Este e-mail já está cadastrado" };
     throw err;
   }
-  // Bônus de boas-vindas: cobre criar 1 persona + gerar 1 vídeo (SIGNUP_BONUS_CREDITS=0 desativa).
-  const bonus = Number(process.env.SIGNUP_BONUS_CREDITS ?? "300");
+  // Bônus de boas-vindas: cobre CRIAR A PERSONA (~56), nunca um vídeo — o vídeo exige
+  // assinatura (paywall no auge do desejo). SIGNUP_BONUS_CREDITS=0 desativa.
+  const bonus = Number(process.env.SIGNUP_BONUS_CREDITS ?? "70");
   if (bonus > 0) await grantCredits({ userId, amount: bonus, note: "bônus de boas-vindas" }).catch(() => {});
   await sendVerification(userId, email.toLowerCase().trim());
   // Leva o nicho da LP pra dentro (pré-preenche a criação da 1ª marca) — continuidade.
   const niche = String(formData.get("niche") ?? "").trim().slice(0, 80);
-  // 1º VÍDEO AUTOMÁTICO: dispara sempre que houver nicho (o job gera a prévia se ela
-  // não vier). O nicho vem confiável na URL /register?niche=, então é consistente.
+  // NOVO FLUXO: com nicho, cria a marca + persona (rascunho) e leva o usuário DIRETO à
+  // tela dos rostos. O vídeo (render) fica atrás do paywall — sem vídeo grátis.
+  let redirectTo = niche ? `/brands?niche=${encodeURIComponent(niche)}` : "/brands";
   if (niche) {
-    let preview: unknown = null;
+    let preview: any = null;
     try {
       const raw = String(formData.get("preview") ?? "").trim();
       if (raw) preview = JSON.parse(raw);
     } catch {
-      /* prévia inválida — o job gera do nicho */
+      /* prévia inválida — usa só o nicho */
     }
-    await sendJob("first-video", { userId, niche, preview }, `first-video:${userId}`).catch(() => {});
+    const personaId = await autoStartFirstPersona(userId, niche, preview).catch(() => null);
+    if (personaId) redirectTo = `/personas/${personaId}`;
   }
-  const redirectTo = niche ? `/brands?niche=${encodeURIComponent(niche)}` : "/brands";
   await signIn("credentials", { email, password, redirectTo });
 }
 

@@ -8,27 +8,27 @@ const display = "font-[family-name:var(--font-display)]";
 const STEPS = [
   {
     n: "01",
-    tag: "O cérebro",
-    title: "Crie sua Marca",
-    text: "Tudo gira em torno da marca. Você ensina a IA sobre o seu negócio uma vez — com um print do perfil ou um texto — e ela entende seu nicho, tom e público. A partir daí ela sugere os temas dos vídeos. Personas, vídeos, agenda e memória vivem todos dentro da marca.",
+    tag: "O rosto",
+    title: "Escolha seu influenciador",
+    text: "Você diz qual é o seu negócio e a Influai já gera 4 rostos pra você escolher. O escolhido vira a identidade da sua marca — rosto e voz travados, o mesmo em todos os vídeos, de 1 a 1.000. Isso é de graça.",
   },
   {
     n: "02",
-    tag: "O rosto",
-    title: "Crie uma Persona",
-    text: "É o seu influenciador de IA — rosto e voz travados, o mesmo em todos os vídeos. Você descreve, escolhe o rosto entre as opções geradas, e a gente cria um “character sheet” que mantém a identidade consistente em 1 ou 1.000 vídeos.",
+    tag: "O cérebro",
+    title: "Ensine sobre seu negócio",
+    text: "Enquanto os rostos geram, conte pra IA sobre o seu negócio — um print do perfil ou um texto. É assim que ela entende seu nicho, tom e público pra criar vídeos sob medida (não genéricos). Esse passo é obrigatório antes de gerar vídeos.",
   },
   {
     n: "03",
     tag: "A fábrica",
-    title: "Gere o Vídeo",
-    text: "Escolha um tema (ou aceite a sugestão da IA pro seu nicho). Em um clique: roteiro, cenas, voz humana e legenda. O vídeo sai pronto, 9:16, sem marca d'água. Você vê o custo em créditos antes de gerar.",
+    title: "Monte o roteiro",
+    text: "Escolha um tema (ou peça ideias pra IA). Em um clique vem o roteiro pronto e editável, no tom da sua marca. Você ajusta o que quiser antes de gerar.",
   },
   {
     n: "04",
     tag: "No automático",
-    title: "Agende e acompanhe",
-    text: "Agende os posts pra sair no horário que você marcar e acompanhe tudo no painel. A ideia é essa: um influenciador que posta sozinho, todo dia, sem você aparecer ou editar.",
+    title: "Assine e publique",
+    text: "Assine um plano pra gerar seus vídeos: 9:16, voz humana e legenda, prontos pra postar. Agende os posts e acompanhe tudo no painel — sem gravar, sem aparecer, sem editar.",
   },
 ];
 
@@ -38,8 +38,8 @@ export default function TutorialPage() {
       <div>
         <h1 className={`${display} text-3xl font-semibold`}>Como funciona</h1>
         <p className="mt-1 max-w-xl text-muted">
-          Tudo começa na <span className="text-ink">Marca</span> — o cérebro. A partir dela você cria personas e gera
-          vídeos. Em 4 passos:
+          Você monta seu <span className="text-ink">influenciador de IA</span> de graça e, quando quiser gerar os
+          vídeos, é só assinar. Em 4 passos:
         </p>
       </div>
 
@@ -63,9 +63,9 @@ export default function TutorialPage() {
           href="/brands"
           className="rounded-full bg-accent px-6 py-3 text-sm font-semibold text-accent-ink transition hover:brightness-95"
         >
-          Criar minha primeira marca →
+          Montar meu influenciador →
         </Link>
-        <span className="text-sm text-muted">Leva uns minutos e o primeiro vídeo é por nossa conta.</span>
+        <span className="text-sm text-muted">Montar é grátis. Você assina quando quiser gerar os vídeos.</span>
       </div>
     </div>
   );

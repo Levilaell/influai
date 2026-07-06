@@ -26,8 +26,8 @@ export function RegisterForm() {
       <h1 className="mb-1 font-[family-name:var(--font-display)] text-2xl font-semibold">Criar conta grátis</h1>
       <p className="mb-6 text-sm text-muted">
         {niche
-          ? `Sua conta pra ${niche} — com créditos pro primeiro vídeo por nossa conta.`
-          : "Seu primeiro influenciador começa aqui — com créditos pro primeiro vídeo grátis."}
+          ? `Sua conta pra ${niche} — monte seu influenciador de graça.`
+          : "Seu primeiro influenciador começa aqui — de graça."}
       </p>
       <form action={action} className="space-y-4">
         <input type="hidden" name="preview" value={previewJson} />

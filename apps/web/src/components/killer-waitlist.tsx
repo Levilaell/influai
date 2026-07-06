@@ -136,8 +136,8 @@ export function KillerWaitlist(_props: { refCode?: string }) {
         <div className="mt-7 rounded-2xl border border-accent/40 bg-accent/5 p-6 text-center">
           <p className="font-[family-name:var(--font-display)] text-xl font-semibold">Isso é só a prévia.</p>
           <p className="mt-1 text-sm text-muted">
-            Crie sua conta <b>grátis</b> e transforme isso em <b>vídeos prontos</b> — com esse influenciador gravando
-            tudo sozinho. O <b>primeiro vídeo é por nossa conta</b>.
+            Crie sua conta <b>grátis</b> e <b>monte esse influenciador</b> — rosto, voz e roteiros no tom da sua marca,
+            por nossa conta. Depois é só assinar pra ele gravar os vídeos.
           </p>
           <form onSubmit={goRegister} className="mx-auto mt-4 flex max-w-md flex-col gap-3 sm:flex-row">
             <input

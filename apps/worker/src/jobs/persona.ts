@@ -12,7 +12,12 @@ import { getStorage } from "@influa/core/storage/index";
 import { genImage, downloadToBuffer } from "@influa/core/providers/index";
 import { releaseRefHold } from "@influa/core/credits/ledger";
 import { faceStyle } from "@influa/core/pipeline/face";
+import { mapLimit } from "@influa/core/util/concurrency";
 import { PRICING, usdToCredits, DEFAULTS } from "@influa/core/config";
+
+// Imagens em paralelo. O limite do Atlas é ~2 concorrentes (empírico, não documentado),
+// então default 2 (já corta o tempo pela metade vs. sequencial) e tunável por env.
+const IMAGE_CONCURRENCY = Math.max(1, Number(process.env.ATLAS_IMAGE_CONCURRENCY ?? "2"));
 
 const CANDIDATE_LIGHTS = [
   "neutral friendly expression, soft natural light",
@@ -81,18 +86,21 @@ export async function registerPersonaJobs(boss: PgBoss) {
     await setPersonaStatus(personaId, "candidates_generating");
     const storage = getStorage();
 
-    for (let i = 0; i < DEFAULTS.personaCandidates; i++) {
-      const fs = faceStyle(persona.face_style);
-      await step(jobKey, `candidate_${i}`, async () => {
-        const providerUrl = await genImage({
-          prompt: `${fs.render} portrait of ${persona.description}. ${CANDIDATE_LIGHTS[i]}. ${fs.texture}, looking at camera, plain neutral background, social media creator aesthetic. Vertical 9:16 composition.`,
-        });
-        const key = `personas/${personaId}/candidate_${batch}_${i}.jpg`;
-        await storage.put(key, await downloadToBuffer(providerUrl));
-        await insertAsset({ personaId, kind: "candidate", idx: i, storageKey: key, providerUrl });
-        return { output: { key, providerUrl }, costUsd: PRICING.imagePerUnit };
-      });
-    }
+    const fs = faceStyle(persona.face_style);
+    await mapLimit(
+      Array.from({ length: DEFAULTS.personaCandidates }, (_, i) => i),
+      IMAGE_CONCURRENCY,
+      (i) =>
+        step(jobKey, `candidate_${i}`, async () => {
+          const providerUrl = await genImage({
+            prompt: `${fs.render} portrait of ${persona.description}. ${CANDIDATE_LIGHTS[i]}. ${fs.texture}, looking at camera, plain neutral background, social media creator aesthetic. Vertical 9:16 composition.`,
+          });
+          const key = `personas/${personaId}/candidate_${batch}_${i}.jpg`;
+          await storage.put(key, await downloadToBuffer(providerUrl));
+          await insertAsset({ personaId, kind: "candidate", idx: i, storageKey: key, providerUrl });
+          return { output: { key, providerUrl }, costUsd: PRICING.imagePerUnit };
+        })
+    );
 
     const used = usdToCredits(await jobCostUsd(jobKey));
     await releaseRefHold(jobKey, "sobra da estimativa (candidatos)", used);
@@ -130,20 +138,18 @@ export async function registerPersonaJobs(boss: PgBoss) {
     const frontUrl = await publicAssetUrl(front);
 
     const sheetStyle = faceStyle(persona.face_style);
-    let idx = 1;
-    for (const [kind, pose] of Object.entries(SHEET_POSES)) {
-      const i = idx++;
-      await step(jobKey, kind, async () => {
+    await mapLimit(Object.entries(SHEET_POSES), IMAGE_CONCURRENCY, ([kind, pose], j) =>
+      step(jobKey, kind, async () => {
         const providerUrl = await genImage({
           prompt: `Same character as in the reference image, identical face and hair. ${pose}. Same style and lighting, plain neutral background, ${sheetStyle.render}, vertical 9:16 composition.`,
           referenceImages: [frontUrl],
         });
         const key = `personas/${personaId}/${kind}.jpg`;
         await storage.put(key, await downloadToBuffer(providerUrl));
-        await insertAsset({ personaId, kind, idx: i, storageKey: key, providerUrl });
+        await insertAsset({ personaId, kind, idx: j + 1, storageKey: key, providerUrl });
         return { output: { key, providerUrl }, costUsd: PRICING.imagePerUnit };
-      });
-    }
+      })
+    );
 
     const used = usdToCredits(await jobCostUsd(jobKey));
     await releaseRefHold(jobKey, "sobra da estimativa (character sheet)", used);

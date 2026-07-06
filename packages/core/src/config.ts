@@ -53,6 +53,14 @@ export const CURATED_VOICES: CuratedVoice[] = [
   { id: "bIHbv24MWmeRgasZH58o", name: "Will", gender: "masculina", tone: "relaxado, otimista" },
   { id: "iP95p4xoKVk53GoZ742B", name: "Chris", gender: "masculina", tone: "carismático, próximo" },
 ];
+
+// Escolhe uma voz curada do gênero pedido — evita persona masculina com voz feminina.
+// `seed` varia a voz entre personas (não fica todo mundo com a mesma).
+export function pickVoiceForGender(gender: "masculina" | "feminina", seed = 0): string {
+  const pool = CURATED_VOICES.filter((v) => v.gender === gender);
+  const list = pool.length ? pool : CURATED_VOICES;
+  return list[Math.abs(Math.trunc(seed)) % list.length].id;
+}
 export const VOICE_PREVIEW_TEXT = "Oi! Essa é a minha voz. Bora criar um conteúdo que prende do começo ao fim?";
 
 export const DEFAULTS = {

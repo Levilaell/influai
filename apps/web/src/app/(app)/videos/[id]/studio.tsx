@@ -9,6 +9,10 @@ import { Scheduler } from "./scheduler";
 import { MetricsPanel } from "./metrics-panel";
 import { ChangeVoice } from "./change-voice";
 import type { LatestMetrics } from "@/actions/metrics";
+import { PaywallModal } from "@/components/paywall-modal";
+import type { PlanId } from "@influa/core/billing/plans";
+
+type PlanView = { id: PlanId; name: string; priceBRL: number; approxVideos: number; monthlyCredits: number; features: string[] };
 
 type Shot = { visual_prompt: string; dialogue: string; camera: string };
 type Script = { title: string; hook: string; narration: string; shots: Shot[]; hashtags: string[] };
@@ -43,15 +47,20 @@ export function VideoStudio({
   pricing,
   latestMetrics,
   currentVoiceId,
+  plans,
+  currentPlan,
 }: {
   video: VideoState;
   pricing: Pricing;
   latestMetrics: LatestMetrics;
   currentVoiceId: string;
+  plans: PlanView[];
+  currentPlan: string;
 }) {
   const [video, setVideo] = useState(initial);
   const [script, setScript] = useState<Script>(initial.script);
   const [error, setError] = useState<string | undefined>();
+  const [showPaywall, setShowPaywall] = useState(false);
   const [pending, startTransition] = useTransition();
 
   const refresh = useCallback(async () => {
@@ -86,7 +95,11 @@ export function VideoStudio({
       const save = await updateScriptAction(video.id, script);
       if (save?.error) return setError(save.error);
       const r = await enqueueVideoAction(video.id);
-      if (r?.error) return setError(r.error);
+      if (r?.error) {
+        // Saldo insuficiente = momento do paywall → abre o modal de assinatura.
+        if (/insuficient|assine|cr[ée]dito/i.test(r.error)) return setShowPaywall(true);
+        return setError(r.error);
+      }
       setVideo((v) => ({ ...v, status: "queued" }));
     });
 
@@ -100,6 +113,7 @@ export function VideoStudio({
 
   return (
     <div className="space-y-8">
+      <PaywallModal open={showPaywall} onClose={() => setShowPaywall(false)} plans={plans} currentPlan={currentPlan} />
       <div className="flex items-center justify-between">
         <div>
           <h1 className="font-[family-name:var(--font-display)] text-2xl font-semibold">{script.title}</h1>

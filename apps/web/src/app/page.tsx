@@ -101,7 +101,7 @@ const FAQ = [
   },
   {
     q: "Como começo?",
-    a: "É só criar sua conta grátis — você já entra com créditos pro primeiro vídeo por nossa conta. Crie sua marca, gere o primeiro influenciador e o primeiro vídeo na hora. Se gostar, assina um plano pra criar sem limite.",
+    a: "É só criar sua conta grátis. Você diz seu negócio, escolhe o rosto do seu influenciador e ensina a IA sobre a sua marca — tudo de graça. Quando quiser gerar os vídeos, é só assinar um plano.",
   },
 ];
 
@@ -331,7 +331,7 @@ export default async function LandingPage({ searchParams }: { searchParams: Prom
               Seu influenciador começa hoje.
             </h2>
             <p className="mx-auto mb-9 mt-4 max-w-[500px] text-[1.05rem] text-accent-ink/75">
-              Crie sua conta grátis — o primeiro vídeo é por nossa conta.
+              Crie sua conta grátis — monte seu influenciador em minutos.
             </p>
             <Link
               href="/register"

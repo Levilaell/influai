@@ -4,6 +4,8 @@ import { useCallback, useEffect, useState, useTransition } from "react";
 import Link from "next/link";
 import { generateCandidatesAction, chooseCandidateAction } from "@/actions/personas";
 import { Badge, Button, Card, ErrorText } from "@/components/ui";
+import { BrandBrain } from "../../brands/[id]/brand-brain";
+import type { BrandProfile } from "@influa/core/brand/index";
 
 type Asset = { id: string; kind: string; idx: number; url: string };
 type PersonaState = {
@@ -32,9 +34,13 @@ const SHEET_KINDS = ["front", "three_quarter", "profile", "speaking"];
 
 export function PersonaWizard({
   persona: initial,
+  brandId,
+  brandProfile,
   estimates,
 }: {
   persona: PersonaState;
+  brandId: string;
+  brandProfile: BrandProfile | null;
   estimates: { creation: number; candidates: number };
 }) {
   const [persona, setPersona] = useState<PersonaState>(initial);
@@ -94,6 +100,19 @@ export function PersonaWizard({
           {persona.status}
         </Badge>
       </div>
+
+      {persona.status !== "ready" && (
+        <Card className="space-y-3 border-accent/30">
+          <div>
+            <p className="font-[family-name:var(--font-display)] text-lg">Enquanto isso, conte sobre seu negócio 👇</p>
+            <p className="mt-1 text-sm text-muted">
+              É assim que a IA entende sua marca e cria vídeos sob medida (não genéricos). Um print do Instagram ou site
+              já basta — ou escreva em texto.
+            </p>
+          </div>
+          <BrandBrain brandId={brandId} initial={brandProfile} />
+        </Card>
+      )}
 
       {persona.status === "draft" && (
         <Card className="space-y-4 text-center">

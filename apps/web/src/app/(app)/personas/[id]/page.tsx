@@ -3,6 +3,7 @@ import { notFound } from "next/navigation";
 import { getPool } from "@influa/core/db/client";
 import { estimateCandidatesCredits, estimateCreationCredits, VOICES } from "@influa/core/config";
 import { requireUserId } from "@/lib/auth";
+import { getBrandProfile } from "@/actions/brand";
 import { PersonaWizard } from "./wizard";
 import { VoiceEditor } from "./voice-editor";
 
@@ -18,6 +19,8 @@ export default async function PersonaPage({ params }: { params: Promise<{ id: st
   );
   if (!rows[0]) notFound();
   const persona = rows[0];
+  // Perfil da marca (cérebro) — pra capturar o negócio já na tela da persona, em paralelo.
+  const brandProfile = await getBrandProfile(persona.brand_id).catch(() => null);
   // voice_id pode ser um nome antigo ("matilda") ou já o id da ElevenLabs
   const resolvedVoiceId = VOICES[persona.voice_id as string] ?? persona.voice_id;
   const currentVoiceName =
@@ -30,6 +33,8 @@ export default async function PersonaPage({ params }: { params: Promise<{ id: st
       </Link>
       <PersonaWizard
         persona={persona}
+        brandId={persona.brand_id}
+        brandProfile={brandProfile}
         estimates={{ creation: estimateCreationCredits(), candidates: estimateCandidatesCredits() }}
       />
       {persona.status === "ready" && (

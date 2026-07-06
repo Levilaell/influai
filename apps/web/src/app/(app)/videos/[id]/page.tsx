@@ -3,6 +3,7 @@ import { getPool } from "@influa/core/db/client";
 import { PRICING, DEFAULTS, VOICES } from "@influa/core/config";
 import { requireUserId } from "@/lib/auth";
 import { getUserPlan } from "@influa/core/billing/service";
+import { PLANS } from "@influa/core/billing/plans";
 import { getLatestMetrics } from "@/actions/metrics";
 import { UpgradeNudge } from "@/components/upgrade-nudge";
 import { VideoStudio } from "./studio";
@@ -22,6 +23,17 @@ export default async function VideoPage({ params }: { params: Promise<{ id: stri
   const rawVoice = v.voice_override || v.persona_voice;
   const currentVoiceId = VOICES[rawVoice as string] ?? rawVoice;
   const plan = await getUserPlan(userId);
+  const planViews = (["starter", "pro", "studio"] as const).map((id) => {
+    const p = PLANS[id];
+    const feats: string[] = [
+      `${p.limits.brands === -1 ? "Marcas ilimitadas" : `${p.limits.brands} marca(s)`}`,
+      `${p.limits.personas === -1 ? "Personas ilimitadas" : `${p.limits.personas} persona(s)`}`,
+    ];
+    if (p.features.scheduling) feats.push("Agendamento de posts");
+    if (p.features.priorityQueue) feats.push("Fila prioritária");
+    if (p.limits.seats > 1) feats.push(`${p.limits.seats} assentos de equipe`);
+    return { id: p.id, name: p.name, priceBRL: p.priceBRL, approxVideos: p.approxVideos, monthlyCredits: p.monthlyCredits, features: feats };
+  });
 
   return (
     <>
@@ -34,6 +46,8 @@ export default async function VideoPage({ params }: { params: Promise<{ id: stri
       <VideoStudio
       latestMetrics={latestMetrics}
       currentVoiceId={currentVoiceId}
+      plans={planViews}
+      currentPlan={plan.id}
       video={{
         id: v.id,
         status: v.status,

@@ -13,4 +13,7 @@ prototype/.env
 .DS_Store
 .turbo/
 scripts/_*.mjs
+marketing/creatives/
+marketing/*.mp3
+marketing/_gen.log
 .vercel

@@ -56,7 +56,7 @@ export const { handlers, auth, signIn, signOut } = NextAuth({
         token.userId = rows[0].id;
         // usuário NOVO via Google ganha o mesmo bônus de boas-vindas do cadastro por email
         if (rows[0].inserted) {
-          const bonus = Number(process.env.SIGNUP_BONUS_CREDITS ?? "300");
+          const bonus = Number(process.env.SIGNUP_BONUS_CREDITS ?? "70");
           if (bonus > 0) await grantCredits({ userId: rows[0].id, amount: bonus, note: "bônus de boas-vindas" }).catch(() => {});
         }
       } else if (user) {

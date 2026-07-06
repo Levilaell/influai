@@ -1,8 +1,9 @@
 import Link from "next/link";
 import { getPool } from "@influa/core/db/client";
 import { requireUserId } from "@/lib/auth";
+import { redirect } from "next/navigation";
 import { getOnboardingState } from "@/lib/onboarding";
-import { sendJob } from "@/lib/queue";
+import { autoStartFirstPersona } from "@/lib/first-persona";
 import { Card } from "@/components/ui";
 import { NewBrandForm } from "./new-brand-form";
 import { Onboarding } from "./onboarding";
@@ -24,11 +25,11 @@ export default async function BrandsPage({ searchParams }: { searchParams: Promi
     [userId]
   );
 
-  // Catch-all do 1º vídeo automático: usuário novo (0 marcas) que chegou com um nicho
-  // (LP, ou Google via ?niche=) dispara a geração. Idempotente (singletonKey + o job
-  // pula se já houver vídeo). Cobre TODOS os caminhos de cadastro, não só o email.
+  // Catch-all do onboarding: usuário novo (0 marcas) que chegou com nicho (Google via
+  // ?niche=, etc.) → cria marca + persona e vai DIRETO pra tela dos rostos. Idempotente.
   if (brands.length === 0 && niche) {
-    await sendJob("first-video", { userId, niche }, `first-video:${userId}`).catch(() => {});
+    const personaId = await autoStartFirstPersona(userId, niche).catch(() => null);
+    if (personaId) redirect(`/personas/${personaId}`);
   }
 
   return (
