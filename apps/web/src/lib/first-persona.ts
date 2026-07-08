@@ -1,10 +1,11 @@
-// Onboarding do novo fluxo: no cadastro (com nicho), cria automaticamente a 1ª marca +
-// persona (rascunho) e JÁ dispara os 4 rostos. O usuário cai direto na tela de escolher o
-// rosto. O hold da criação usa o bônus (cobre a persona); o VÍDEO exige assinatura depois.
+// Onboarding do FUNIL NOVO (2026-07-08): no cadastro (com nicho), cria a 1ª marca +
+// persona e dispara o job persona-auto — 1 rosto DIRETO (sem portão de escolha),
+// ângulos e o TEASER de apresentação (~8s, marca d'água). Quem quiser outro rosto
+// usa "gerar outras opções" depois. Hold cobre só as 3 imagens (o teaser é por nossa conta).
 // Idempotente: se já houver persona, não recria.
 import { getPool } from "@influa/core/db/client";
 import { holdByRef } from "@influa/core/credits/ledger";
-import { estimateCreationCredits, pickVoiceForGender } from "@influa/core/config";
+import { PRICING, usdToCredits, pickVoiceForGender } from "@influa/core/config";
 import { sendJob } from "@/lib/queue";
 
 function slugify(s: string): string {
@@ -53,14 +54,14 @@ export async function autoStartFirstPersona(userId: string, niche: string, previ
   );
   const personaId = pr[0].id;
 
-  // 3. hold da criação (usa o bônus) + dispara os 4 rostos (async, já paralelizado)
+  // 3. hold da criação (3 imagens: rosto + 2 ângulos) + dispara o fluxo automático
   const ref = `persona:${personaId}:creation`;
   try {
-    await holdByRef({ userId, personaId, ref, amount: estimateCreationCredits(), note: `reserva: criação da persona "${name}"` });
+    await holdByRef({ userId, personaId, ref, amount: usdToCredits(3 * PRICING.imagePerUnit), note: `reserva: criação da persona "${name}"` });
   } catch {
     return personaId; // sem créditos (não deveria) — fica em draft, o usuário gera manual
   }
-  await pool.query("update personas set status = 'candidates_generating' where id = $1", [personaId]);
-  await sendJob("persona-candidates", { personaId, batch: 1 }, ref);
+  await pool.query("update personas set status = 'sheet_generating' where id = $1", [personaId]);
+  await sendJob("persona-auto", { personaId, niche, gender, tagline: typeof p.tagline === "string" ? p.tagline : undefined }, ref);
   return personaId;
 }

@@ -1,5 +1,5 @@
 import Link from "next/link";
-import { notFound, redirect } from "next/navigation";
+import { notFound } from "next/navigation";
 import { getPool } from "@influa/core/db/client";
 import { requireUserId } from "@/lib/auth";
 import { getBrandProfile, listBrandAssets, listBrandScenes } from "@/actions/brand";
@@ -26,10 +26,8 @@ export default async function NewVideoPage({
   }
   if (!brandId) notFound();
 
-  // Cérebro obrigatório: sem perfil da marca, a IA não tem contexto pro vídeo → manda criar.
-  const { rows: brainRows } = await getPool().query("select 1 from brand_profiles where brand_id = $1", [brandId]);
-  if (!brainRows[0]) redirect(`/brands/${brandId}?tab=Cérebro`);
-
+  // Cérebro OPCIONAL (funil novo): ideias/roteiro têm fallback pelo nicho; o form
+  // já mostra a dica de conectar o Cérebro pra temas mais afiados.
   const { rows: brand } = await getPool().query(
     "select id, name from brands where id = $1 and user_id = $2",
     [brandId, userId]

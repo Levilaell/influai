@@ -172,23 +172,19 @@ export function BrandDashboard({
         </div>
       )}
 
+      {/* Cérebro é NUDGE, não portão (funil novo): vídeo funciona só com o nicho. */}
       {tab === "Vídeos" && !profile && (
-        <Card className="space-y-3 py-10 text-center">
-          <p className="font-[family-name:var(--font-display)] text-xl">Crie o Cérebro da Marca primeiro 🧠</p>
-          <p className="mx-auto max-w-md text-muted">
-            Sem o cérebro, a IA não tem informações do seu negócio pra criar bons vídeos. Envie um print do
-            Instagram/site ou escreva um texto — leva 30s.
-          </p>
-          <a
-            href={`/brands/${brand.id}?tab=Cérebro`}
-            className="inline-block rounded-full bg-accent px-6 py-2.5 text-sm font-bold text-accent-ink"
-          >
-            Criar o Cérebro →
+        <div className="flex flex-wrap items-center justify-between gap-3 rounded-2xl border border-accent/30 bg-accent/5 px-4 py-3 text-sm">
+          <span>
+            🧠 <b>Dica:</b> conecte o Cérebro da Marca (30s, um print basta) e os temas saem sob medida do seu negócio.
+          </span>
+          <a href={`/brands/${brand.id}?tab=Cérebro`} className="font-semibold text-accent hover:underline">
+            Conectar →
           </a>
-        </Card>
+        </div>
       )}
 
-      {tab === "Vídeos" && profile && (
+      {tab === "Vídeos" && (
         <div className="space-y-5">
           <div className="flex flex-wrap items-center justify-end gap-3">
             {draftCount > 0 && <EnqueueAll brandId={brand.id} count={draftCount} />}

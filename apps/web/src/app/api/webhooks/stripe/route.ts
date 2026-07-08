@@ -4,7 +4,8 @@
 import { getPool } from "@influa/core/db/client";
 import { verifyStripeWebhook } from "@influa/core/billing/stripe";
 import { activateSubscription, cancelSubscription, syncSubscription } from "@influa/core/billing/service";
-import { PLANS, type PlanId } from "@influa/core/billing/plans";
+import { PLANS, AVULSO, type PlanId } from "@influa/core/billing/plans";
+import { grantCreditsByRef } from "@influa/core/credits/ledger";
 
 // price_... -> planId, a partir das env vars dos planos
 function planForPrice(priceId: string | undefined): PlanId | null {
@@ -37,6 +38,29 @@ export async function POST(req: Request) {
   const obj = ev?.data?.object ?? {};
 
   try {
+    // Vídeo avulso (pagamento único): concede os créditos, idempotente pela session.
+    if (ev.type === "checkout.session.completed" && obj.mode === "payment" && obj.metadata?.kind === "avulso") {
+      if (obj.payment_status !== "paid") return Response.json({ ok: true, note: "aguardando pagamento (ex.: Pix)" });
+      const userId = obj.metadata?.userId ?? (await userForCustomer(pool, obj.customer));
+      if (!userId) return Response.json({ ok: true, note: "sem usuário" });
+      const credits = Math.min(Number(obj.metadata?.credits ?? AVULSO.credits) || AVULSO.credits, 1000);
+      const granted = await grantCreditsByRef({
+        userId, amount: credits, ref: `avulso:${obj.id}`, note: "vídeo avulso (pagamento único)",
+      });
+      return Response.json({ ok: true, granted });
+    }
+
+    // Pix confirma DEPOIS do checkout fechar: async_payment_succeeded chega quando compensa.
+    if (ev.type === "checkout.session.async_payment_succeeded" && obj.metadata?.kind === "avulso") {
+      const userId = obj.metadata?.userId ?? (await userForCustomer(pool, obj.customer));
+      if (!userId) return Response.json({ ok: true, note: "sem usuário" });
+      const credits = Math.min(Number(obj.metadata?.credits ?? AVULSO.credits) || AVULSO.credits, 1000);
+      const granted = await grantCreditsByRef({
+        userId, amount: credits, ref: `avulso:${obj.id}`, note: "vídeo avulso (Pix compensado)",
+      });
+      return Response.json({ ok: true, granted });
+    }
+
     if (ev.type === "invoice.paid" || ev.type === "invoice.payment_succeeded") {
       const line = obj.lines?.data?.[0];
       const priceId = line?.price?.id ?? line?.plan?.id;

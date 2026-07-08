@@ -77,7 +77,9 @@ export async function generateCandidatesAction(personaId: string): Promise<Actio
   );
   const persona = rows[0];
   if (!persona) return { error: "Persona não encontrada" };
-  if (!["draft", "candidates_ready", "failed"].includes(persona.status))
+  // "ready" incluído: no funil novo o rosto vem automático e a escolha é OPCIONAL —
+  // quem não curtiu gera 4 opções a partir da persona pronta.
+  if (!["draft", "candidates_ready", "failed", "ready"].includes(persona.status))
     return { error: "Persona em processamento" };
 
   // 1ª geração = "criação" (cobre 4 rostos + character sheet, num preço só).

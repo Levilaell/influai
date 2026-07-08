@@ -19,6 +19,8 @@ type PersonaState = {
   status: string;
   error: string | null;
   assets?: Asset[];
+  teaser_status?: string | null;
+  teaserUrl?: string | null;
 };
 
 const GENERATING = ["candidates_generating", "sheet_generating"];
@@ -61,10 +63,11 @@ export function PersonaWizard({
   }, [refresh]);
 
   useEffect(() => {
-    if (!GENERATING.includes(persona.status)) return;
+    // continua o polling enquanto gera rostos/ângulos OU o teaser de apresentação
+    if (!GENERATING.includes(persona.status) && persona.teaser_status !== "generating") return;
     const t = setInterval(refresh, 2500);
     return () => clearInterval(t);
-  }, [persona.status, refresh]);
+  }, [persona.status, persona.teaser_status, refresh]);
 
   const candidates = (persona.assets ?? []).filter((a) => a.kind === "candidate");
   const sheet = (persona.assets ?? []).filter((a) => SHEET_KINDS.includes(a.kind));
@@ -113,11 +116,11 @@ export function PersonaWizard({
           <div className="flex-1">
             <p className="text-sm font-semibold text-ink">
               {persona.status === "sheet_generating"
-                ? "Finalizando sua persona..."
+                ? `Criando ${persona.name}... rosto e ângulos da identidade`
                 : `Criando seus rostos — ${candidates.length}/${CANDIDATE_COUNT} prontos`}
             </p>
             <p className="text-xs text-muted">
-              Pode ir preenchendo o cérebro da marca abaixo — te avisamos quando as opções ficarem prontas.
+              Pode ir preenchendo o cérebro da marca abaixo — te avisamos quando ficar pronto.
             </p>
           </div>
         </div>
@@ -125,7 +128,41 @@ export function PersonaWizard({
 
       <VoiceCard personaId={persona.id} currentVoiceId={persona.voice_id} />
 
-      {persona.status !== "ready" && (
+      {/* Teaser gerando: banner + cérebro com narrativa ("enquanto ela grava...") */}
+      {persona.status === "ready" && persona.teaser_status === "generating" && (
+        <div className="flex items-center gap-3 rounded-2xl border border-accent/40 bg-accent/10 px-4 py-3">
+          <span className="relative flex h-3 w-3 shrink-0">
+            <span className="absolute inline-flex h-full w-full animate-ping rounded-full bg-accent opacity-60" />
+            <span className="relative inline-flex h-3 w-3 rounded-full bg-accent" />
+          </span>
+          <div className="flex-1">
+            <p className="text-sm font-semibold text-ink">🎬 {persona.name} está gravando uma mensagem pra você (~2 min)</p>
+            <p className="text-xs text-muted">Enquanto isso, conta mais do seu negócio abaixo — ajuda a acertar o tom dos vídeos.</p>
+          </div>
+        </div>
+      )}
+
+      {/* Teaser pronto: o "primeiro encontro" */}
+      {persona.status === "ready" && persona.teaserUrl && (
+        <Card className="space-y-4 border-accent/40 text-center">
+          <p className="font-[family-name:var(--font-display)] text-xl">🎬 Uma mensagem de {persona.name} pra você</p>
+          <div className="mx-auto max-w-[280px] overflow-hidden rounded-2xl border border-line">
+            {/* eslint-disable-next-line jsx-a11y/media-has-caption */}
+            <video src={persona.teaserUrl} controls playsInline className="aspect-[9/16] w-full bg-black" />
+          </div>
+          <p className="text-sm text-muted">
+            Isso foi só um oi. O vídeo de verdade — com o tema que você escolher, sem marca d&apos;água — sai em minutos.
+          </p>
+          <Link
+            href={`/videos/new?persona=${persona.id}`}
+            className="inline-block rounded-full bg-accent px-8 py-3 text-sm font-bold text-accent-ink transition hover:brightness-105"
+          >
+            Criar o primeiro vídeo →
+          </Link>
+        </Card>
+      )}
+
+      {(persona.status !== "ready" || persona.teaser_status === "generating") && (
         <Card className="space-y-3 border-accent/30">
           <div>
             <p className="font-[family-name:var(--font-display)] text-lg">Enquanto isso, conte sobre seu negócio 👇</p>
@@ -213,9 +250,9 @@ export function PersonaWizard({
       {persona.status === "ready" && (
         <div className="space-y-6">
           <Card className="space-y-1 text-center">
-            <p className="font-[family-name:var(--font-display)] text-xl text-accent">Persona pronta</p>
+            <p className="font-[family-name:var(--font-display)] text-xl text-accent">Identidade travada</p>
             <p className="text-sm text-muted">
-              Character sheet travado — este rosto aparece idêntico em todos os vídeos.
+              Este rosto aparece idêntico em todos os vídeos.
             </p>
           </Card>
           <div className="grid grid-cols-2 gap-4 sm:grid-cols-3">
@@ -229,13 +266,24 @@ export function PersonaWizard({
               </div>
             ))}
           </div>
-          <div className="flex justify-center">
-            <Link
-              href={`/videos/new?persona=${persona.id}`}
-              className="rounded-full bg-accent px-8 py-3 text-sm font-bold text-accent-ink transition hover:brightness-105"
+          <div className="flex flex-col items-center gap-3">
+            {!persona.teaserUrl && (
+              <Link
+                href={`/videos/new?persona=${persona.id}`}
+                className="rounded-full bg-accent px-8 py-3 text-sm font-bold text-accent-ink transition hover:brightness-105"
+              >
+                Criar o primeiro vídeo
+              </Link>
+            )}
+            {/* Escolha opcional (não é mais portão): quem quiser outro rosto, gera opções */}
+            <button
+              onClick={runCandidates}
+              disabled={pending}
+              className="text-xs text-muted underline transition hover:text-accent disabled:opacity-50"
             >
-              Criar o primeiro vídeo
-            </Link>
+              Não curtiu o rosto? Gerar 4 opções ({estimates.candidates} créditos)
+            </button>
+            <ErrorText>{error}</ErrorText>
           </div>
         </div>
       )}

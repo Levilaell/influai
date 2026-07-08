@@ -64,7 +64,7 @@ export function RegisterForm() {
             onChange={(e) => setNicheVal(e.target.value)}
             placeholder="Ex: cafeteria, advogado, loja de roupa..."
           />
-          <p className="mt-1.5 text-xs text-accent">Já geramos seu primeiro vídeo automaticamente com isso 🎬</p>
+          <p className="mt-1.5 text-xs text-accent">A IA monta seu influenciador com isso — e ele grava um vídeo pra você 🎬</p>
         </div>
         <div>
           <Label htmlFor="displayName">Nome</Label>

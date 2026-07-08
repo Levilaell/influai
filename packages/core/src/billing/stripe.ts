@@ -50,6 +50,33 @@ export async function stripeCreateSubscriptionCheckout(opts: {
   return json.url as string;
 }
 
+/** Checkout de pagamento ÚNICO (vídeo avulso). payment_method_types fica automático:
+ *  o dashboard controla os métodos (habilitar Pix lá = aparece aqui, sem mudar código). */
+export async function stripeCreateOneOffCheckout(opts: {
+  customerId: string;
+  userId: string;
+  amountBRL: number;
+  productName: string;
+  credits: number;
+  successUrl: string;
+  cancelUrl: string;
+}): Promise<string> {
+  const json = await stripePost("/checkout/sessions", {
+    mode: "payment",
+    customer: opts.customerId,
+    "line_items[0][price_data][currency]": "brl",
+    "line_items[0][price_data][unit_amount]": String(Math.round(opts.amountBRL * 100)),
+    "line_items[0][price_data][product_data][name]": opts.productName,
+    "line_items[0][quantity]": "1",
+    success_url: opts.successUrl,
+    cancel_url: opts.cancelUrl,
+    "metadata[kind]": "avulso",
+    "metadata[userId]": opts.userId,
+    "metadata[credits]": String(opts.credits),
+  });
+  return json.url as string;
+}
+
 /** Abre o Customer Portal do Stripe (cancelar, trocar plano, atualizar cartão, faturas). */
 export async function stripeCreatePortalSession(opts: { customerId: string; returnUrl: string }): Promise<string> {
   const form: Record<string, string> = { customer: opts.customerId, return_url: opts.returnUrl };

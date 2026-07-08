@@ -34,6 +34,12 @@ await boss.work("ping", async (jobs) => {
 const { registerPersonaJobs } = await import("./jobs/persona.ts").catch(() => ({ registerPersonaJobs: null }));
 if (registerPersonaJobs) await registerPersonaJobs(boss);
 
+const { registerAutoPersonaJobs } = await import("./jobs/auto-persona.ts").catch((e) => {
+  console.error("[worker] persona-auto falhou ao carregar:", e?.message);
+  return { registerAutoPersonaJobs: null };
+});
+if (registerAutoPersonaJobs) await registerAutoPersonaJobs(boss);
+
 const { registerVideoJobs } = await import("./jobs/video-pipeline.ts").catch(() => ({ registerVideoJobs: null }));
 if (registerVideoJobs) await registerVideoJobs(boss);
 

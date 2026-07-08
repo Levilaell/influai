@@ -42,6 +42,10 @@ export const PLANS: Record<PlanId, Plan> = {
   },
 };
 
+// Vídeo avulso (degrau de entrada do funil): pagamento ÚNICO — aceita Pix no
+// checkout (recorrência não aceita). Créditos cobrem 1 vídeo (~175) com folga.
+export const AVULSO = { priceBRL: 19, credits: 200 };
+
 export function planById(id: string | null | undefined): Plan {
   return PLANS[(id as PlanId) ?? "free"] ?? PLANS.free;
 }

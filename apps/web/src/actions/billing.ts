@@ -1,11 +1,12 @@
 "use server";
 import { getPool } from "@influa/core/db/client";
 import { env } from "@influa/core/env";
-import { PLANS, type PlanId } from "@influa/core/billing/plans";
+import { PLANS, AVULSO, type PlanId } from "@influa/core/billing/plans";
 import { getUserPlan, getUserSubscription } from "@influa/core/billing/service";
 import {
   stripeCreateCustomer,
   stripeCreateSubscriptionCheckout,
+  stripeCreateOneOffCheckout,
   stripeCreatePortalSession,
 } from "@influa/core/billing/stripe";
 import { track } from "@influa/core/analytics";
@@ -47,6 +48,39 @@ export async function startCheckoutAction(planId: PlanId, returnPath?: string): 
       customerId,
       userId,
       plan: plan.id,
+      successUrl: `${base}${back}${sep}subscribed=1`,
+      cancelUrl: `${base}${back}`,
+    });
+    return { url };
+  } catch (err: any) {
+    return { error: `Falha ao iniciar o checkout: ${String(err.message).slice(0, 160)}` };
+  }
+}
+
+/** Vídeo avulso (pagamento único, aceita Pix): degrau de entrada antes da assinatura. */
+export async function startAvulsoCheckoutAction(returnPath?: string): Promise<{ url?: string; error?: string }> {
+  const userId = await requireUserId();
+  const pool = getPool();
+  const { rows } = await pool.query("select email, display_name, stripe_customer_id from users where id = $1", [userId]);
+  const u = rows[0];
+  if (!u) return { error: "Usuário não encontrado" };
+
+  await track("checkout_started", { userId, metadata: { plan: "avulso" } });
+  try {
+    let customerId = u.stripe_customer_id;
+    if (!customerId) {
+      customerId = await stripeCreateCustomer({ email: u.email, name: u.display_name ?? undefined });
+      await pool.query("update users set stripe_customer_id = $2 where id = $1", [userId, customerId]);
+    }
+    const base = env("PUBLIC_BASE_URL", "http://localhost:3000").replace(/\/$/, "");
+    const back = returnPath && returnPath.startsWith("/") ? returnPath.slice(0, 200) : "/credits";
+    const sep = back.includes("?") ? "&" : "?";
+    const url = await stripeCreateOneOffCheckout({
+      customerId,
+      userId,
+      amountBRL: AVULSO.priceBRL,
+      productName: "Influai — 1 vídeo avulso",
+      credits: AVULSO.credits,
       successUrl: `${base}${back}${sep}subscribed=1`,
       cancelUrl: `${base}${back}`,
     });

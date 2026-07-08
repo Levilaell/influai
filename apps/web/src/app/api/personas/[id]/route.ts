@@ -11,7 +11,7 @@ export async function GET(_req: NextRequest, { params }: { params: Promise<{ id:
   const { id } = await params;
   const pool = getPool();
   const { rows } = await pool.query(
-    "select id, status, error, name, voice_id from personas where id = $1 and user_id = $2",
+    "select id, status, error, name, voice_id, teaser_status, teaser_storage_key from personas where id = $1 and user_id = $2",
     [id, userId]
   );
   if (!rows[0]) return Response.json({ error: "not found" }, { status: 404 });
@@ -24,6 +24,7 @@ export async function GET(_req: NextRequest, { params }: { params: Promise<{ id:
 
   return Response.json({
     ...rows[0],
+    teaserUrl: rows[0].teaser_storage_key ? `/api/files/${rows[0].teaser_storage_key}` : null,
     assets: assets.map((a) => ({
       id: a.id,
       kind: a.kind,
