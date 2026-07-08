@@ -24,26 +24,21 @@ import { CURATED_VOICES } from "@influa/core/config";
 const exec = promisify(execFile);
 const OUT = "apps/web/public/examples";
 
+// Refresh 2026-07-08 (pipeline atual: fala 1.1x, gestos, voz fixa v2, WaveSpeed):
 const NICHES = [
-  { slug: "cafeteria", niche: "cafeteria de bairro especializada em café especial", useCase: "Promoção de marca" },
-  { slug: "moda", niche: "loja de roupa feminina / moda", useCase: "Apresentação de produto" },
-  { slug: "fitness", niche: "personal trainer e estúdio de treino funcional", useCase: "Influencer pessoal" },
-  { slug: "estetica", niche: "clínica de estética facial e skincare", useCase: "Serviço + produto" },
-  { slug: "hamburgueria", niche: "hamburgueria artesanal com delivery", useCase: "Promoção de marca" },
-  { slug: "imobiliaria", niche: "corretor de imóveis / imobiliária", useCase: "Autoridade e serviço" },
+  { slug: "estetica", niche: "clínica de estética facial e skincare", useCase: "Serviço + produto", music: "ambiente" },
+  { slug: "moda", niche: "loja de roupa feminina / moda", useCase: "Apresentação de produto", music: "hiphop2" },
+  { slug: "imobiliaria", niche: "corretor de imóveis / imobiliária", useCase: "Autoridade e serviço", music: "inspirador" },
 ];
 
-function voiceFor(look: string): string {
+function voiceFor(look: string, seed = 0): string {
   const female = /mulher|feminin|garota|moça|jovem de|ela /i.test(look);
   const pool = CURATED_VOICES.filter((v) => (female ? v.gender === "feminina" : v.gender === "masculina"));
-  return (pool.length ? pool : CURATED_VOICES)[0].id;
+  const list = pool.length ? pool : CURATED_VOICES;
+  return list[Math.abs(seed) % list.length].id;
 }
 
 async function genOne(item: (typeof NICHES)[number]): Promise<{ slug: string; persona: string; seconds: number } | null> {
-  if (fs.existsSync(`${OUT}/${item.slug}.mp4`)) {
-    console.log(`[gen] = ${item.slug} já existe, pulando`);
-    return null;
-  }
   const t0 = Date.now();
   console.log(`[gen] ▶ ${item.slug} — ${item.niche}`);
   try {
@@ -57,7 +52,7 @@ async function genOne(item: (typeof NICHES)[number]): Promise<{ slug: string; pe
     // 1) keyframe (text-to-image)
     const kfBuf = await downloadToBuffer(
       await genImage({
-        prompt: `${persona.look ?? "friendly Brazilian content creator"}, as a social media creator speaking directly to camera, in a setting relevant to "${item.niche}". Face clearly visible with open eyes, natural confident expression, gesturing. Photorealistic, vertical 9:16, cinematic lighting, high detail. No text, no letters, no watermark, no signage.`,
+        prompt: `${persona.look ?? "friendly Brazilian content creator"}, as a social media creator speaking directly to camera, in a setting relevant to "${item.niche}". SOLO subject — only this one person, absolutely NO other people anywhere in the frame or background (they would look frozen). Face clearly visible with open eyes, natural confident expression, mid-gesture with hands visible. Photorealistic, vertical 9:16, cinematic lighting, high detail. No text, no letters, no watermark, no signage.`,
       })
     );
     const imageUrl = await hostPublic(`scripts/${Date.now().toString(36)}-kf.jpg`, kfBuf, "image/jpeg");
@@ -71,7 +66,7 @@ async function genOne(item: (typeof NICHES)[number]): Promise<{ slug: string; pe
       shots: lines.map((d) => ({ visual_prompt: "x", dialogue: d, camera: "medium shot" })),
     };
     const voiceFile = path.join(tmp, "voice.mp3");
-    const narr = await generateNarration({ script, voice: voiceFor(persona.look ?? ""), outFile: voiceFile });
+    const narr = await generateNarration({ script, voice: voiceFor(persona.look ?? "", item.slug.split("").reduce((a, c) => a + c.charCodeAt(0), 0)), outFile: voiceFile });
     const audioUrl = await hostPublic(`scripts/${Date.now().toString(36)}-voice.mp3`, fs.readFileSync(voiceFile), "audio/mpeg");
 
     // 3) take (InfiniteTalk) + 4) legendas
@@ -84,7 +79,7 @@ async function genOne(item: (typeof NICHES)[number]): Promise<{ slug: string; pe
       script,
       audioDurationSeconds: narr.durationSeconds,
       alignment: narr.alignment ?? null,
-      music: "inspirador",
+      music: (item as any).music ?? "inspirador",
       broll: null,
       outFile: rawFinal,
     });
@@ -135,7 +130,7 @@ async function withRetry(item: (typeof NICHES)[number]) {
 
 const started = Date.now();
 // concorrência 1: não compete com o worker de produção (E2E) pelo Atlas
-const results = (await mapLimit(NICHES, 1, withRetry)).filter(Boolean) as { slug: string; persona: string; seconds: number }[];
+const results = (await mapLimit(NICHES, 3, withRetry)).filter(Boolean) as { slug: string; persona: string; seconds: number }[];
 const avg = results.length ? Math.round(results.reduce((a, b) => a + b.seconds, 0) / results.length) : 0;
 console.log("\n════════ RESUMO ════════");
 for (const r of results) console.log(`  ${r.slug.padEnd(14)} ${r.persona.padEnd(22)} ${r.seconds}s`);
