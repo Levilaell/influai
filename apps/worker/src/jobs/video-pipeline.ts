@@ -77,12 +77,14 @@ import { scriptSchema } from "@influa/core/schemas";
 export async function registerVideoJobs(boss: PgBoss) {
   await boss.createQueue("video-pipeline-dlq");
   await boss.createQueue("video-pipeline", {
-    retryLimit: 3,
-    retryDelay: 60,
+    // Expiração CURTA + muitos retries, de propósito: como o take é retomável (take_submit
+    // cacheado), um retry resume do cache em segundos — então expirar é barato e é o que
+    // recupera rápido um job órfão (worker reiniciado em deploy). Take legítimo mais longo
+    // que 20min só "expira" e o retry seguinte continua o MESMO take de onde parou.
+    retryLimit: 5,
+    retryDelay: 30,
     retryBackoff: true,
-    // 60min: no tier Bronze da WaveSpeed a task fica na fila DELES antes de rodar; o retry
-    // retoma a mesma task (take_submit cacheado), então expirar cedo só atrapalha.
-    expireInSeconds: 3600,
+    expireInSeconds: 1200,
     deadLetter: "video-pipeline-dlq",
   } as any);
 
