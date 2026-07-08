@@ -310,14 +310,21 @@ export function NewVideoForm({
             <span />
           )}
           {isLast ? (
-            <Button type="submit" disabled={pending || !personaId || topic.trim().length < 3} className="flex-1 sm:flex-none sm:px-10">
+            // key distinta do "Continuar": sem ela o React REAPROVEITA o mesmo <button> e
+            // troca type button→submit antes do browser executar a ação default do clique
+            // em "Continuar" — o form submetia sozinho ao entrar na última etapa.
+            <Button key="submit" type="submit" disabled={pending || !personaId || topic.trim().length < 3} className="flex-1 sm:flex-none sm:px-10">
               {pending ? "Escrevendo o roteiro..." : "Gerar roteiro →"}
             </Button>
           ) : (
             <Button
+              key="next"
               type="button"
               disabled={!canContinue}
-              onClick={() => setStepIdx((i) => i + 1)}
+              onClick={(e) => {
+                e.preventDefault();
+                setStepIdx((i) => i + 1);
+              }}
               className="flex-1 sm:flex-none sm:px-10"
             >
               Continuar →
