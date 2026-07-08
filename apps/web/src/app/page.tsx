@@ -4,6 +4,7 @@ import { redirect } from "next/navigation";
 import { auth } from "@/lib/auth";
 import { KillerWaitlist } from "@/components/killer-waitlist";
 import { VideoShowcase } from "@/components/video-showcase";
+import { ExamplesSection } from "@/components/examples-section";
 import { ContactForm } from "@/components/contact-form";
 
 export const metadata: Metadata = {
@@ -233,6 +234,20 @@ export default async function LandingPage({ searchParams }: { searchParams: Prom
                 </div>
               ))}
             </div>
+          </div>
+        </section>
+
+        {/* ── EXEMPLOS REAIS (assistíveis, com som) ── */}
+        <section id="exemplos" className="scroll-mt-6 py-[64px] md:py-[92px]">
+          <div className="mx-auto max-w-[1120px] px-6">
+            <h2 className={`${display} mb-3.5 text-[clamp(1.9rem,4vw,2.9rem)] font-semibold leading-[1.08]`}>
+              Veja como ficaria <span className="italic text-accent">pro seu negócio</span>
+            </h2>
+            <p className="mb-10 max-w-[560px] text-muted">
+              Escolha um ramo e assista com som — todos os vídeos abaixo foram gerados 100% pela Influai,
+              do roteiro à legenda.
+            </p>
+            <ExamplesSection />
           </div>
         </section>
 

@@ -2,7 +2,7 @@
 // Vitrine de exemplos: celulares 9:16 com vídeos REAIS gerados, em marquee horizontal.
 // Mostra versatilidade (nichos e formatos diferentes) com movimento — nada de grid estático.
 
-const EXAMPLES = [
+export const EXAMPLES = [
   { src: "/examples/cafeteria.mp4", poster: "/examples/cafeteria.jpg", niche: "Cafeteria", tag: "Negócio local" },
   { src: "/examples/anim-petshop.mp4", poster: "/examples/anim-petshop.jpg", niche: "Petshop", tag: "Animação 3D" },
   { src: "/examples/moda.mp4", poster: "/examples/moda.jpg", niche: "Moda", tag: "Loja / produto" },
