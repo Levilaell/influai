@@ -25,10 +25,16 @@ export async function autoStartFirstPersona(userId: string, niche: string, previ
   if (has[0]) return has[0].id;
 
   const p = preview?.persona ?? {};
-  const look =
-    (typeof p.look === "string" && p.look) ||
-    `creator de conteúdo brasileiro para o nicho de ${niche}, jovem adulto, carismático, estilo casual, ambiente relevante ao negócio`;
-  const gender: "masculina" | "feminina" = p.gender === "masculina" ? "masculina" : "feminina";
+  // Gênero coerente: da prévia se veio; senão escolhe (variado por usuário) — pra o LOOK e a
+  // VOZ casarem (antes o look era neutro + voz sempre feminina → rosto masculino com voz feminina).
+  const seedG = userId.split("").reduce((a, c) => a + c.charCodeAt(0), 0);
+  const gender: "masculina" | "feminina" =
+    p.gender === "masculina" ? "masculina" : p.gender === "feminina" ? "feminina" : seedG % 2 === 0 ? "feminina" : "masculina";
+  const defaultLook =
+    gender === "masculina"
+      ? `homem brasileiro, jovem adulto, carismático, estilo casual moderno, criador de conteúdo para o nicho de ${niche}, ambiente relevante ao negócio`
+      : `mulher brasileira, jovem adulta, carismática, estilo casual moderno, criadora de conteúdo para o nicho de ${niche}, ambiente relevante ao negócio`;
+  const look = (typeof p.look === "string" && p.look) || defaultLook;
   const name = (typeof p.name === "string" && p.name) || "Meu influenciador";
   const brandName = niche ? niche.charAt(0).toUpperCase() + niche.slice(1) : "Minha marca";
 

@@ -1,29 +1,24 @@
-// Resolve URL que o Atlas consegue buscar, em ordem de custo:
-//  1. provider_url fresca (<50min) — já é uma URL do Atlas, sem re-upload
-//  2. upload pro storage do PRÓPRIO Atlas (uploadMedia) — robusto, sem túnel
+// URLs públicas para os providers (WaveSpeed) buscarem — agora 100% via R2 (presigned),
+// sem Atlas. A URL assinada do R2 é acessível publicamente até expirar.
 import { getPool } from "@influa/core/db/client";
 import { getStorage } from "@influa/core/storage/index";
-import { atlasUploadMedia } from "@influa/core/providers/index";
-import fs from "node:fs";
 
-const FRESH_MS = 50 * 60 * 1000;
+const HOST_TTL = 2 * 60 * 60; // 2h — cobre a geração (take pode levar minutos) com folga
 
-function contentTypeFor(key: string): string {
-  if (key.endsWith(".mp3")) return "audio/mpeg";
-  if (key.endsWith(".png")) return "image/png";
-  if (key.endsWith(".webp")) return "image/webp";
-  return "image/jpeg";
-}
-
+// URL pública (R2 presigned) de um asset já gravado no storage.
 export async function publicAssetUrl(asset: {
   storage_key: string;
-  provider_url: string | null;
-  created_at: Date | string;
+  provider_url?: string | null;
+  created_at?: Date | string;
 }): Promise<string> {
-  const age = Date.now() - new Date(asset.created_at).getTime();
-  if (asset.provider_url && age < FRESH_MS) return asset.provider_url;
-  const buf = fs.readFileSync(getStorage().getPath(asset.storage_key));
-  return atlasUploadMedia(buf, contentTypeFor(asset.storage_key));
+  return getStorage().publicUrl(asset.storage_key, HOST_TTL);
+}
+
+// Hospeda um buffer efêmero (áudio/imagem/vídeo) no R2 e devolve URL pública temporária.
+export async function hostBuffer(key: string, buf: Buffer, contentType: string): Promise<string> {
+  const storage = getStorage();
+  await storage.put(key, buf, contentType);
+  return storage.publicUrl(key, HOST_TTL);
 }
 
 export async function getPersonaAssets(personaId: string, kinds?: string[]) {

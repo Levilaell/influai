@@ -33,7 +33,7 @@ export function verifyFileSignature(key: string, exp: number, sig: string): bool
 }
 
 export class LocalStorageDriver implements StorageDriver {
-  async put(key: string, data: Buffer | string): Promise<string> {
+  async put(key: string, data: Buffer | string, _contentType?: string): Promise<string> {
     if (key.includes("..")) throw new Error("key inválida");
     const dest = this.getPath(key);
     fs.mkdirSync(path.dirname(dest), { recursive: true });

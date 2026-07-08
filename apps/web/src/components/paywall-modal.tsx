@@ -18,11 +18,13 @@ export function PaywallModal({
   onClose,
   plans,
   currentPlan,
+  returnPath,
 }: {
   open: boolean;
   onClose: () => void;
   plans: PlanView[];
   currentPlan: string;
+  returnPath?: string;
 }) {
   if (!open) return null;
   return (
@@ -42,7 +44,7 @@ export function PaywallModal({
             Assine um plano pra gerar seu vídeo e criar quantos quiser — no piloto automático. Cancele quando quiser.
           </p>
         </div>
-        <Plans plans={plans} currentPlan={currentPlan} />
+        <Plans plans={plans} currentPlan={currentPlan} returnPath={returnPath} />
         <button onClick={onClose} className="mt-5 block w-full text-center text-sm text-muted hover:text-ink">
           Agora não
         </button>

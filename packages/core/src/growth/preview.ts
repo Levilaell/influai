@@ -2,6 +2,7 @@
 // gera persona + 5 ideias + 1 roteiro numa ÚNICA chamada Claude (rápido e barato).
 // É a isca: a pessoa vê o "cérebro" trabalhando pro negócio dela antes de dar o email.
 import Anthropic from "@anthropic-ai/sdk";
+import { CLAUDE_MODEL } from "../config.ts";
 import "../env.ts";
 
 export type PreviewPersona = { name: string; tagline: string; look: string; gender: "masculina" | "feminina" };
@@ -15,7 +16,8 @@ Regras:
 - persona: um influenciador de IA que faria sentido para essa marca (name = nome brasileiro; tagline = bordão/posicionamento em 1 linha; look = descrição visual curta em português: idade aproximada, estilo, ambiente; gender = "masculina" ou "feminina", COERENTE com o name e o look — isso define a voz do vídeo).
 - ideas: 5 ideias de vídeo com título chamativo + hook (frase de abertura dos 2 primeiros segundos). Use formatos comprovados (mito x verdade, erro comum, listicle, bastidores, comparação).
 - script: 1 roteiro pronto (title + 4 falas curtas em "lines" + 4-6 hashtags sem #). Cada fala ~1 frase, com pontuação natural. A última fala é um CTA sutil.
-- NUNCA use emojis. Acentuação correta e completa (você, não, São, é — nunca voce/nao/Sao).`;
+- NUNCA use emojis.
+⚠️ ACENTUAÇÃO: escreva toda palavra com acentuação correta e completa do português em TODOS os campos, INCLUSIVE nos títulos (não trate título como slug). Certo: "Opinião polêmica", "combinações", "não", "café", "memória", "você", "é". ERRADO: "Opiniao", "polemica", "combinacoes", "nao", "cafe", "memoria", "voce".`;
 
 const SCHEMA = {
   type: "object",
@@ -49,7 +51,7 @@ const SCHEMA = {
 export async function generatePreview(niche: string): Promise<Preview> {
   const client = new Anthropic();
   const response = await client.messages.create({
-    model: "claude-opus-4-8",
+    model: CLAUDE_MODEL,
     max_tokens: 4096,
     thinking: { type: "adaptive" },
     system: SYSTEM,

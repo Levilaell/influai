@@ -74,3 +74,21 @@ export async function requireUserId(): Promise<string> {
   if (!id) throw new Error("Não autenticado");
   return id;
 }
+
+/** Só admins (coluna users.is_admin, + ADMIN_EMAILS de bootstrap). Não-admin recebe 404. */
+export async function requireAdmin(): Promise<string> {
+  const userId = await requireUserId();
+  const { rows } = await getPool().query("select is_admin, email from users where id = $1", [userId]);
+  const email = String(rows[0]?.email ?? "").toLowerCase().trim();
+  const admins = (process.env.ADMIN_EMAILS ?? "")
+    .toLowerCase()
+    .split(",")
+    .map((s) => s.trim())
+    .filter(Boolean);
+  const ok = rows[0]?.is_admin === true || (email && admins.includes(email));
+  if (!ok) {
+    const { notFound } = await import("next/navigation");
+    notFound();
+  }
+  return userId;
+}

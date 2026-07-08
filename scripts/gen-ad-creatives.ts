@@ -19,7 +19,7 @@ const CREATIVES: Creative[] = [
   {
     slug: "1-meta-prova",
     angle: "Meta-prova (o anúncio é feito pela própria IA)",
-    look: "confident young Brazilian woman, mid 20s, natural wavy brown hair, minimal modern makeup, casual stylish top, bright modern room with a soft ring-light glow, content-creator vibe, speaking directly to camera, gesturing naturally",
+    look: "confident young Brazilian woman, mid 20s, natural wavy brown hair, minimal modern makeup, smart casual top, working in a modern content-creation studio, clean setup with a soft key light and a plain backdrop, speaking directly to camera, gesturing naturally",
     voice: "cgSgspJ2msm6clMCkdW9", // Jessica — animada, calorosa
     music: "hiphop2",
     lines: [
@@ -32,7 +32,7 @@ const CREATIVES: Creative[] = [
   {
     slug: "2-nao-aparecer",
     angle: "Não precisa aparecer (dono de negócio que odeia gravar)",
-    look: "warm approachable Brazilian woman, around 30, friendly genuine smile, casual sweater, cozy well-lit home with plants softly blurred behind, relatable everyday vibe, speaking directly to camera",
+    look: "warm approachable Brazilian woman, around 30, friendly genuine smile, apron over a casual shirt, standing behind the counter of her own cozy specialty coffee shop, warm cafe interior with an espresso machine and shelves softly blurred behind, at work as the owner, speaking directly to camera",
     voice: "EXAVITQu4vr4xnSDxMaL", // Sarah — confiante, madura
     music: "inspirador",
     lines: [
@@ -45,8 +45,8 @@ const CREATIVES: Creative[] = [
   {
     slug: "3-funcionario",
     angle: "O funcionário que nunca para (ROI / negócio)",
-    look: "professional Brazilian man, around 35, short well-groomed hair, light beard, smart casual button shirt, modern office background softly blurred, confident trustworthy vibe, speaking directly to camera",
-    voice: "nPczCjzI2devNBz1zQrb", // Brian — grave, confortante
+    look: "professional Brazilian man, around 35, short well-groomed hair, light beard, smart casual button shirt, sitting at a tidy modern office desk with a laptop, professional workspace softly blurred behind, at work, confident trustworthy vibe, speaking directly to camera",
+    voice: "cjVigY5qzO86Huf0OWal", // Eric — suave, confiável
     music: "hiphop",
     lines: [
       "Quanto você pagaria por um funcionário que grava vídeo pro seu negócio todo santo dia?",
@@ -58,7 +58,7 @@ const CREATIVES: Creative[] = [
   {
     slug: "4-nao-existe",
     angle: "Esse rosto não existe (uau / curiosidade)",
-    look: "striking stylish young Brazilian woman, early 20s, bold confident expression, trendy modern outfit, dramatic soft studio lighting with subtle color accents, high-fashion creator aesthetic, speaking directly to camera",
+    look: "striking stylish young Brazilian woman, early 20s, bold confident expression, trendy modern outfit, working inside her stylish modern boutique clothing shop, clothing racks and shelves softly blurred behind, at work, speaking directly to camera",
     voice: "FGY2WhTYpPnrIDTdsKH5", // Laura — jovem, social
     music: "funk",
     lines: [
@@ -81,7 +81,7 @@ async function genOne(c: Creative) {
   // 1) keyframe
   const kfBuf = await downloadToBuffer(
     await genImage({
-      prompt: `${c.look}. Face clearly visible with open eyes, natural confident expression. Photorealistic, vertical 9:16 portrait, cinematic lighting, high detail, shallow depth of field. No text, no letters, no captions, no watermark, no signage.`,
+      prompt: `${c.look}. Face clearly visible with open eyes, natural confident expression. SOLO subject — only this one person, absolutely NO other people anywhere in the frame or background (they would look frozen). Photorealistic, vertical 9:16 portrait, cinematic lighting, high detail, shallow depth of field. No text, no letters, no captions, no watermark, no signage.`,
     })
   );
   const imageUrl = await atlasUploadMedia(kfBuf, "image/jpeg");
@@ -111,7 +111,11 @@ async function genOne(c: Creative) {
     outFile: rawFinal,
   });
   fs.mkdirSync(OUT, { recursive: true });
-  await exec("ffmpeg", ["-y", "-v", "error", "-i", rawFinal, "-c:v", "libx264", "-crf", "20", "-preset", "slow", "-c:a", "aac", "-b:a", "160k", "-movflags", "+faststart", `${OUT}/${c.slug}.mp4`]);
+  // Compress + polish: 1.08x (menos "sono"), drift leve no fundo (mata o "congelado"),
+  // segura o último frame 0.5s (não corta o final). Take do InfiniteTalk = 704x1280.
+  await exec("ffmpeg", ["-y", "-v", "error", "-i", rawFinal, "-filter_complex",
+    "[0:v]setpts=PTS/1.08,scale=774:1408,crop=704:1280:x='35+18*sin(t/7)':y='(1408-1280)*min(t/30\\,1)',tpad=stop_mode=clone:stop_duration=0.5[v];[0:a]atempo=1.08[a]",
+    "-map", "[v]", "-map", "[a]", "-c:v", "libx264", "-crf", "20", "-preset", "veryfast", "-c:a", "aac", "-b:a", "160k", "-movflags", "+faststart", `${OUT}/${c.slug}.mp4`]);
   await exec("ffmpeg", ["-y", "-v", "error", "-ss", "1", "-i", rawFinal, "-frames:v", "1", `${OUT}/${c.slug}.jpg`]);
   fs.rmSync(tmp, { recursive: true, force: true });
   const seconds = Math.round((Date.now() - t0) / 1000);
@@ -125,7 +129,7 @@ async function withRetry(c: Creative) {
       return await genOne(c);
     } catch (e: any) {
       console.error(`[ad] x ${c.slug} tentativa ${a}: ${String(e?.message).slice(0, 160)}`);
-      if (a < 3) await new Promise((r) => setTimeout(r, 30000 * a));
+      if (a < 3) await new Promise((r) => setTimeout(r, 240000)); // 4min entre tentativas — não hammera o limite
     }
   }
   return { slug: c.slug, ok: false };

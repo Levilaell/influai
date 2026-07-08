@@ -3,6 +3,7 @@
 // still (nano-banana) e animamos (veo). A montagem corta isso na hora certa.
 import Anthropic from "@anthropic-ai/sdk";
 import { z } from "zod";
+import { CLAUDE_MODEL } from "../config.ts";
 import { atlasImage, atlasVideoFromImage, downloadToBuffer } from "../providers/atlas.ts";
 import type { Script } from "../schemas.ts";
 import "../env.ts";
@@ -22,7 +23,7 @@ const SCHEMA = {
 export async function suggestBroll(script: Script): Promise<{ shotIndex: number; prompt: string }> {
   const client = new Anthropic();
   const response = await client.messages.create({
-    model: "claude-opus-4-8",
+    model: CLAUDE_MODEL,
     max_tokens: 1024,
     system: SYSTEM,
     messages: [

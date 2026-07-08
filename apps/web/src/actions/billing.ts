@@ -8,6 +8,7 @@ import {
   stripeCreateSubscriptionCheckout,
   stripeCreatePortalSession,
 } from "@influa/core/billing/stripe";
+import { track } from "@influa/core/analytics";
 import { requireUserId } from "@/lib/auth";
 
 export async function currentPlanInfo() {
@@ -17,7 +18,7 @@ export async function currentPlanInfo() {
 }
 
 /** Inicia o checkout de um plano no Stripe e devolve a URL de pagamento. */
-export async function startCheckoutAction(planId: PlanId): Promise<{ url?: string; error?: string }> {
+export async function startCheckoutAction(planId: PlanId, returnPath?: string): Promise<{ url?: string; error?: string }> {
   const userId = await requireUserId();
   const plan = PLANS[planId];
   if (!plan || plan.id === "free" || !plan.stripePriceEnv) return { error: "Plano inválido" };
@@ -30,6 +31,7 @@ export async function startCheckoutAction(planId: PlanId): Promise<{ url?: strin
   const u = rows[0];
   if (!u) return { error: "Usuário não encontrado" };
 
+  await track("checkout_started", { userId, metadata: { plan: planId } });
   try {
     let customerId = u.stripe_customer_id;
     if (!customerId) {
@@ -37,13 +39,16 @@ export async function startCheckoutAction(planId: PlanId): Promise<{ url?: strin
       await pool.query("update users set stripe_customer_id = $2 where id = $1", [userId, customerId]);
     }
     const base = env("PUBLIC_BASE_URL", "http://localhost:3000").replace(/\/$/, "");
+    // Volta pra tela de onde o usuário assinou (ex.: o vídeo que ele tentava gerar), não /credits.
+    const back = returnPath && returnPath.startsWith("/") ? returnPath.slice(0, 200) : "/credits";
+    const sep = back.includes("?") ? "&" : "?";
     const url = await stripeCreateSubscriptionCheckout({
       priceId,
       customerId,
       userId,
       plan: plan.id,
-      successUrl: `${base}/credits?ok=1`,
-      cancelUrl: `${base}/credits`,
+      successUrl: `${base}${back}${sep}subscribed=1`,
+      cancelUrl: `${base}${back}`,
     });
     return { url };
   } catch (err: any) {

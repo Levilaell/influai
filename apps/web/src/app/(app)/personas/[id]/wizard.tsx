@@ -5,6 +5,8 @@ import Link from "next/link";
 import { generateCandidatesAction, chooseCandidateAction } from "@/actions/personas";
 import { Badge, Button, Card, ErrorText } from "@/components/ui";
 import { BrandBrain } from "../../brands/[id]/brand-brain";
+import { EditableName } from "./editable-name";
+import { VoiceCard } from "./voice-card";
 import type { BrandProfile } from "@influa/core/brand/index";
 
 type Asset = { id: string; kind: string; idx: number; url: string };
@@ -30,7 +32,8 @@ const KIND_LABEL: Record<string, string> = {
 };
 
 const CANDIDATE_COUNT = 4;
-const SHEET_KINDS = ["front", "three_quarter", "profile", "speaking"];
+// "profile" saiu do sheet (nunca era usado nos vídeos); personas antigas ainda o têm no banco.
+const SHEET_KINDS = ["front", "three_quarter", "speaking"];
 
 export function PersonaWizard({
   persona: initial,
@@ -91,15 +94,36 @@ export function PersonaWizard({
     <div className="space-y-8">
       <div className="flex items-center justify-between">
         <div>
-          <h1 className="font-[family-name:var(--font-display)] text-3xl font-semibold">{persona.name}</h1>
-          <p className="mt-1 text-muted">
-            Voz: {persona.voice_id} · {initial.niche}
-          </p>
+          <h1 className="font-[family-name:var(--font-display)] text-3xl font-semibold">
+            <EditableName personaId={persona.id} initial={persona.name} />
+          </h1>
+          <p className="mt-1 text-muted">{initial.niche}</p>
         </div>
         <Badge tone={persona.status === "ready" ? "ok" : persona.status === "failed" ? "danger" : "accent"}>
           {persona.status}
         </Badge>
       </div>
+
+      {GENERATING.includes(persona.status) && (
+        <div className="sticky top-2 z-10 flex items-center gap-3 rounded-2xl border border-accent/40 bg-accent/10 px-4 py-3 shadow-sm backdrop-blur">
+          <span className="relative flex h-3 w-3 shrink-0">
+            <span className="absolute inline-flex h-full w-full animate-ping rounded-full bg-accent opacity-60" />
+            <span className="relative inline-flex h-3 w-3 rounded-full bg-accent" />
+          </span>
+          <div className="flex-1">
+            <p className="text-sm font-semibold text-ink">
+              {persona.status === "sheet_generating"
+                ? "Finalizando sua persona..."
+                : `Criando seus rostos — ${candidates.length}/${CANDIDATE_COUNT} prontos`}
+            </p>
+            <p className="text-xs text-muted">
+              Pode ir preenchendo o cérebro da marca abaixo — te avisamos quando as opções ficarem prontas.
+            </p>
+          </div>
+        </div>
+      )}
+
+      <VoiceCard personaId={persona.id} currentVoiceId={persona.voice_id} />
 
       {persona.status !== "ready" && (
         <Card className="space-y-3 border-accent/30">
@@ -180,7 +204,7 @@ export function PersonaWizard({
         <div className="space-y-4">
           <Card className="text-center">
             <p className="font-[family-name:var(--font-display)] text-lg">Travando a identidade...</p>
-            <p className="text-sm text-muted">Gerando o mesmo rosto em 4 ângulos.</p>
+            <p className="text-sm text-muted">Gerando o mesmo rosto em 3 ângulos.</p>
           </Card>
           <TileGrid total={SHEET_KINDS.length} assets={sheet} labels />
         </div>
@@ -194,7 +218,7 @@ export function PersonaWizard({
               Character sheet travado — este rosto aparece idêntico em todos os vídeos.
             </p>
           </Card>
-          <div className="grid grid-cols-2 gap-4 md:grid-cols-4">
+          <div className="grid grid-cols-2 gap-4 sm:grid-cols-3">
             {sheet.map((a) => (
               <div key={a.id} className="overflow-hidden rounded-2xl border border-line">
                 {/* eslint-disable-next-line @next/next/no-img-element */}

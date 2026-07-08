@@ -14,12 +14,12 @@ type PlanView = {
   features: string[];
 };
 
-export function Plans({ plans, currentPlan }: { plans: PlanView[]; currentPlan: string }) {
+export function Plans({ plans, currentPlan, returnPath }: { plans: PlanView[]; currentPlan: string; returnPath?: string }) {
   const [pending, start] = useTransition();
 
   const subscribe = (id: PlanId) =>
     start(async () => {
-      const r = await startCheckoutAction(id);
+      const r = await startCheckoutAction(id, returnPath);
       if (r.error) return toast(r.error, "error");
       if (r.url) window.location.href = r.url;
     });

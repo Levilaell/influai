@@ -3,6 +3,7 @@
 // Marca estruturado que alimenta o motor de ideias e o gerador de roteiro.
 // Caminho "C": Claude multimodal lê imagem OU texto — sem scraping, qualquer rede.
 import Anthropic from "@anthropic-ai/sdk";
+import { CLAUDE_MODEL } from "../config.ts";
 import { z } from "zod";
 import { stripEmojis } from "../text.ts";
 import "../env.ts";
@@ -13,8 +14,10 @@ export const brandProfileSchema = z.object({
   value_proposition: z.string().describe("Proposta de valor / principais diferenciais"),
   tone: z.string().describe("Tom de voz do conteúdo (ex: descontraído e educativo)"),
   niche: z.string().describe("Nicho de conteúdo"),
-  content_pillars: z.array(z.string()).min(3).max(6).describe("Temas recorrentes de conteúdo"),
-  products: z.array(z.string()).max(8).describe("Produtos/serviços específicos mencionados"),
+  // Sem .min/.max: o modelo às vezes devolve mais/menos e não vale quebrar o parse por contagem.
+  // Cortamos o excesso no transform (mantém a intenção sem rejeitar).
+  content_pillars: z.array(z.string()).transform((a) => a.slice(0, 6)).describe("Temas recorrentes de conteúdo (3 a 6)"),
+  products: z.array(z.string()).transform((a) => a.slice(0, 12)).describe("Produtos/serviços específicos mencionados"),
   confidence: z.enum(["alta", "média", "baixa"]).describe("Confiança na extração dado o material"),
   notes: z.string().describe("O que faltou ou o que confirmar com o usuário, em PT-BR"),
 });
@@ -28,8 +31,8 @@ const BRAND_JSON_SCHEMA = {
     value_proposition: { type: "string", description: "Proposta de valor / diferenciais" },
     tone: { type: "string", description: "Tom de voz do conteúdo" },
     niche: { type: "string", description: "Nicho de conteúdo" },
-    content_pillars: { type: "array", items: { type: "string" }, description: "3-6 temas recorrentes" },
-    products: { type: "array", items: { type: "string" }, description: "Produtos/serviços específicos" },
+    content_pillars: { type: "array", items: { type: "string" }, description: "3 a 6 temas recorrentes (não mais que 6)" },
+    products: { type: "array", items: { type: "string" }, description: "Principais produtos/serviços específicos (até ~10, os mais relevantes)" },
     confidence: { type: "string", enum: ["alta", "média", "baixa"] },
     notes: { type: "string", description: "O que faltou / confirmar com o usuário, em PT-BR" },
   },
@@ -65,7 +68,7 @@ export async function extractBrandProfile(input: {
   });
 
   const response = await client.messages.create({
-    model: "claude-opus-4-8",
+    model: CLAUDE_MODEL,
     max_tokens: 2048,
     system: EXTRACT_SYSTEM,
     messages: [{ role: "user", content }],
@@ -111,9 +114,14 @@ const IDEAS_JSON_SCHEMA = {
 } as const;
 
 const IDEAS_SYSTEM = `Você é estrategista de conteúdo viral para vídeos curtos (Reels/TikTok/Shorts) em português brasileiro.
+
+⚠️ REGRA ABSOLUTA DE ACENTUAÇÃO — vale para TODOS os campos, INCLUSIVE títulos e rótulos de formato (não trate título como slug):
+Escreva toda palavra com a acentuação correta e completa do português. NUNCA omita acentos.
+Certo: "Opinião polêmica", "combinações", "não", "café", "memória", "manhã", "às", "você", "é", "prática".
+ERRADO (nunca faça): "Opiniao", "polemica", "combinacoes", "nao", "cafe", "memoria", "manha", "as", "voce".
+
 A partir do Perfil da Marca, proponha ideias de vídeo variadas em formato e ângulo, cada uma pronta para um influenciador de IA gravar como talking head. Use formatos comprovados (listicle, mito x verdade, erro comum, storytime, bastidores, comparação, tutorial rápido). O campo "topic" deve ser autoexplicativo o suficiente para virar roteiro sozinho.
-NUNCA use emojis em nenhum campo.
-ACENTUAÇÃO CORRETA E COMPLETA: use todos os acentos do português (você, não, São, é, prática...) — nunca escreva sem acento (voce, nao, Sao).`;
+NUNCA use emojis em nenhum campo.`;
 
 /** Perfil mínimo a partir só da persona (quando ainda não há Cérebro da Marca). */
 export function brandProfileFromPersona(p: {
@@ -139,14 +147,14 @@ export async function generateIdeas(profile: BrandProfile, n = 6, memoryContext?
   const memoryBlock = memoryContext ? `\n\n${memoryContext}` : "";
   const objectiveBlock = objectiveHint ? `\n\nOBJETIVO das ideias: ${objectiveHint}` : "";
   const response = await client.messages.create({
-    model: "claude-opus-4-8",
+    model: CLAUDE_MODEL,
     max_tokens: 4096,
     thinking: { type: "adaptive" },
     system: IDEAS_SYSTEM,
     messages: [
       {
         role: "user",
-        content: `Perfil da Marca:\n${JSON.stringify(profile, null, 2)}${memoryBlock}${objectiveBlock}\n\nGere exatamente ${n} ideias de vídeo.`,
+        content: `Perfil da Marca:\n${JSON.stringify(profile, null, 2)}${memoryBlock}${objectiveBlock}\n\nGere exatamente ${n} ideias de vídeo. Lembre: acentuação completa e correta em TODOS os campos, inclusive nos títulos e formatos (ex.: "Opinião polêmica", nunca "Opiniao polemica").`,
       },
     ],
     output_config: { format: { type: "json_schema", schema: IDEAS_JSON_SCHEMA } },
@@ -198,7 +206,7 @@ const SCENES_JSON_SCHEMA = {
 export async function generateBrandScenes(profile: BrandProfile, n = 5): Promise<BrandScene[]> {
   const client = new Anthropic();
   const response = await client.messages.create({
-    model: "claude-opus-4-8",
+    model: CLAUDE_MODEL,
     max_tokens: 2048,
     thinking: { type: "adaptive" },
     system: SCENES_SYSTEM,

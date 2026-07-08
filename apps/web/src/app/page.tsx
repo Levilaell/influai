@@ -61,24 +61,25 @@ const COMPARE: [string, string, string][] = [
   ["Publicação", "Baixa e posta na mão", "Agendamento de posts"],
 ];
 
+// Espelha packages/core/billing/plans.ts — mantenha em sincronia com o checkout do Stripe.
 const PLANS = [
   {
     name: "Starter",
-    price: "R$ 127",
+    price: "R$ 47",
     featured: false,
-    items: ["~6 vídeos de 20s/mês", "2 personas", "Export sem marca d'água"],
+    items: ["~3 vídeos/mês", "2 personas", "Export sem marca d'água"],
   },
   {
     name: "Pro",
-    price: "R$ 397",
+    price: "R$ 97",
     featured: true,
-    items: ["~21 vídeos de 20s/mês", "8 personas", "Agendamento de posts", "Fila prioritária"],
+    items: ["~8 vídeos/mês", "8 personas", "Agendamento de posts", "Fila prioritária"],
   },
   {
     name: "Studio",
-    price: "R$ 997",
+    price: "R$ 197",
     featured: false,
-    items: ["~54 vídeos de 20s/mês", "Personas ilimitadas", "5 assentos + prioridade", "Recursos avançados da marca"],
+    items: ["~20 vídeos/mês", "Personas ilimitadas", "5 assentos + prioridade", "Recursos avançados da marca"],
   },
 ];
 
@@ -247,15 +248,17 @@ export default async function LandingPage({ searchParams }: { searchParams: Prom
               {COMPARE.map(([label, them, us], i) => (
                 <div
                   key={label}
-                  className={`grid grid-cols-1 sm:grid-cols-[1fr_1fr_1fr] ${i > 0 ? "border-t border-line" : ""}`}
+                  className={`grid grid-cols-2 sm:grid-cols-[1fr_1fr_1fr] ${i > 0 ? "border-t border-line" : ""}`}
                 >
-                  <div className="bg-bg-soft px-5 py-4 text-[.9rem] font-medium text-muted">{label}</div>
-                  <div className="border-t border-line px-5 py-4 text-[.92rem] text-muted line-through decoration-danger/50 sm:border-t-0">
+                  <div className="col-span-2 bg-bg-soft px-5 py-3 text-[.9rem] font-medium text-muted sm:col-span-1 sm:py-4">
+                    {label}
+                  </div>
+                  <div className="border-t border-line px-5 py-4 text-[.9rem] leading-snug text-muted line-through decoration-danger/50 sm:text-[.92rem] sm:border-t-0">
                     {them}
                   </div>
-                  <div className="flex items-center gap-2 border-t border-line bg-accent/[.04] px-5 py-4 text-[.92rem] text-ink sm:border-t-0">
-                    <span className="text-accent">✓</span>
-                    {us}
+                  <div className="flex items-start gap-2 border-l border-t border-line bg-accent/[.04] px-5 py-4 text-[.9rem] leading-snug text-ink sm:items-center sm:border-l-0 sm:text-[.92rem] sm:border-t-0">
+                    <span className="mt-0.5 text-accent sm:mt-0">✓</span>
+                    <span>{us}</span>
                   </div>
                 </div>
               ))}
@@ -297,6 +300,16 @@ export default async function LandingPage({ searchParams }: { searchParams: Prom
                       </li>
                     ))}
                   </ul>
+                  <Link
+                    href="/register"
+                    className={`mt-6 block rounded-full px-5 py-2.5 text-center text-sm font-semibold transition ${
+                      p.featured
+                        ? "bg-accent text-accent-ink hover:opacity-90"
+                        : "border border-line text-ink hover:border-accent hover:text-accent"
+                    }`}
+                  >
+                    Começar
+                  </Link>
                 </div>
               ))}
             </div>

@@ -9,7 +9,8 @@ import path from "node:path";
 import { createHash } from "node:crypto";
 import { getPool } from "@influa/core/db/client";
 import { getStorage } from "@influa/core/storage/index";
-import { genImage, atlasUploadMedia, downloadToBuffer } from "@influa/core/providers/index";
+import { genImage, downloadToBuffer } from "@influa/core/providers/index";
+import { hostBuffer } from "../assets.ts";
 import { generateNarration, generateAvatarTake } from "@influa/core/pipeline/avatar";
 import { assembleAvatar } from "@influa/core/pipeline/assemble";
 import { sendEmail, emailTemplate } from "@influa/core/email/index";
@@ -40,7 +41,7 @@ async function handleLead(email: string) {
         prompt: `${persona.look ?? "friendly Brazilian content creator"}, as a social media creator speaking directly to camera, in a setting relevant to "${row.niche}". Face clearly visible with open eyes, natural confident expression, gesturing. Photorealistic, vertical 9:16, cinematic lighting, high detail. No text, no letters, no watermark, no signage.`,
       })
     );
-    const imageUrl = await atlasUploadMedia(kfBuf, "image/jpeg");
+    const imageUrl = await hostBuffer(`lead/${hash}/kf.jpg`, kfBuf, "image/jpeg");
 
     // 2) narração (voz curada padrão)
     const script: any = {
@@ -51,7 +52,7 @@ async function handleLead(email: string) {
     const voice = CURATED_VOICES[0].id;
     const voiceFile = path.join(tmp, "voice.mp3");
     const narr = await generateNarration({ script, voice, outFile: voiceFile });
-    const audioUrl = await atlasUploadMedia(fs.readFileSync(voiceFile), "audio/mpeg");
+    const audioUrl = await hostBuffer(`lead/${hash}/voice.mp3`, fs.readFileSync(voiceFile), "audio/mpeg");
 
     // 3) take (InfiniteTalk) + 4) legendas
     const take = await generateAvatarTake({ audioUrl, imageUrl });

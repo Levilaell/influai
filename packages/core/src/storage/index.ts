@@ -2,7 +2,7 @@
 // mesma interface (publicUrl assinada com expiração ≡ presigned URL).
 export interface StorageDriver {
   /** Grava buffer ou copia arquivo local para a key. Retorna a key. */
-  put(key: string, data: Buffer | string): Promise<string>;
+  put(key: string, data: Buffer | string, contentType?: string): Promise<string>;
   /** Caminho absoluto local (para ffmpeg/ffprobe). */
   getPath(key: string): string;
   /** URL pública temporária que o Atlas/browser consegue buscar. */

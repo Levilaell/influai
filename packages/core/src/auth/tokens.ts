@@ -30,3 +30,14 @@ export async function consumeAuthToken(kind: TokenKind, raw: string): Promise<st
   );
   return rows[0]?.user_id ?? null;
 }
+
+/** Valida SEM consumir (reutilizável dentro do TTL). Para verificação de e-mail: clientes
+ *  como Outlook/Hotmail pré-carregam o link (GET) e consumiriam um token single-use antes
+ *  do usuário clicar. Como verificar e-mail é idempotente, deixamos o token reutilizável. */
+export async function validateAuthToken(kind: TokenKind, raw: string): Promise<string | null> {
+  const { rows } = await getPool().query(
+    `select user_id from auth_tokens where token_hash = $1 and kind = $2 and expires_at > now()`,
+    [sha256(raw), kind]
+  );
+  return rows[0]?.user_id ?? null;
+}

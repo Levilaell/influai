@@ -38,7 +38,7 @@ export function objectiveGuide(key: string | undefined): string {
 // Vídeo longo = vários takes concatenados (Kling não faz 60-90s num take só).
 export type Length = "curto" | "medio" | "longo";
 export const LENGTHS: { key: Length; label: string; shots: number; segments: number; guide: string }[] = [
-  { key: "curto", label: "Curto (~20s)", shots: 4, segments: 1, guide: "" },
+  { key: "curto", label: "Curto (~25s)", shots: 4, segments: 1, guide: "" },
   {
     key: "medio", label: "Médio (~60s)", shots: 9, segments: 3,
     guide: "DURAÇÃO: vídeo mais longo (~60s). Desenvolva o tema com profundidade em seções encadeadas, mantendo a retenção com micro-ganchos entre os blocos.",

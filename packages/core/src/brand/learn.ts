@@ -3,6 +3,7 @@
 // Esses learnings já entram no prompt de roteiro/ideias (memoryForPrompt) — fecha o loop.
 import Anthropic from "@anthropic-ai/sdk";
 import { z } from "zod";
+import { CLAUDE_MODEL } from "../config.ts";
 import { getPool } from "../db/client.ts";
 import { stripEmojis } from "../text.ts";
 import "../env.ts";
@@ -37,7 +38,7 @@ export async function analyzeBrandLearnings(brandId: string): Promise<{ learning
 
   const client = new Anthropic();
   const response = await client.messages.create({
-    model: "claude-opus-4-8",
+    model: CLAUDE_MODEL,
     max_tokens: 2048,
     thinking: { type: "adaptive" },
     system: SYSTEM,

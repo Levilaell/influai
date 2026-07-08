@@ -9,7 +9,7 @@ import { env } from "@influa/core/env";
 const boss = new PgBoss({
   connectionString: process.env.PGBOSS_DATABASE_URL ?? env("DATABASE_URL"),
   schema: "pgboss",
-  max: 3,
+  max: 4, // pool session (5432) do pg-boss. 2 réplicas × 4 = 8 < limite 15 do pooler.
 });
 boss.on("error", (err) => console.error("[pg-boss]", err));
 

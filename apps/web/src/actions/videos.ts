@@ -70,6 +70,11 @@ export async function createVideoDraftAction(_prev: ActionState, formData: FormD
     }
   }
 
+  // Voz escolhida no form. Igual à da persona => sem override (troca futura da persona vale).
+  const rawVoice = String(formData.get("voice") ?? "").trim();
+  const voiceOverride =
+    /^[A-Za-z0-9]{8,40}$/.test(rawVoice) && rawVoice !== persona.voice_id ? rawVoice : null;
+
   // Memória operacional da marca (temas já cobertos, estilo) injetada no roteiro
   const memory = memoryForPrompt(await getBrandMemory(persona.brand_id));
 
@@ -90,9 +95,9 @@ export async function createVideoDraftAction(_prev: ActionState, formData: FormD
   }
 
   const { rows: v } = await pool.query(
-    `insert into videos (user_id, brand_id, persona_id, topic, script, status, reference_keys, style, segments)
-     values ($1, $2, $3, $4, $5, 'draft', $6, $7, $8) returning id`,
-    [userId, persona.brand_id, personaId, topic, JSON.stringify(script), JSON.stringify(referenceKeys), JSON.stringify(style), len.segments]
+    `insert into videos (user_id, brand_id, persona_id, topic, script, status, reference_keys, style, segments, voice_override)
+     values ($1, $2, $3, $4, $5, 'draft', $6, $7, $8, $9) returning id`,
+    [userId, persona.brand_id, personaId, topic, JSON.stringify(script), JSON.stringify(referenceKeys), JSON.stringify(style), len.segments, voiceOverride]
   );
   redirect(`/videos/${v[0].id}`);
 }

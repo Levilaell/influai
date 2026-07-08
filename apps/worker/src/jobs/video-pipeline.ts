@@ -25,6 +25,23 @@ async function mapLimit<T, R>(items: T[], limit: number, fn: (item: T, i: number
   await Promise.all(Array.from({ length: Math.min(limit, items.length) }, worker));
   return results;
 }
+
+/** Reтenta em 429/rate-limit/timeout transitório do Atlas — o usuário nunca vê "Falha",
+ *  só espera um pouco mais. Backoff escalonado até ~5min. */
+async function withTakeRetry<T>(fn: () => Promise<T>): Promise<T> {
+  const delays = [20000, 45000, 90000, 150000];
+  for (let a = 0; ; a++) {
+    try {
+      return await fn();
+    } catch (e: any) {
+      const msg = String(e?.message ?? "");
+      const transient = /429|rate.?limit|too many|timed? ?out|50[234]/i.test(msg);
+      if (!transient || a >= delays.length) throw e;
+      console.warn(`[video] take transitório (${msg.slice(0, 80)}), retry ${a + 1} em ${delays[a] / 1000}s`);
+      await new Promise((r) => setTimeout(r, delays[a]));
+    }
+  }
+}
 /** Duração em segundos de um mp4/mp3 (ffprobe). */
 async function probeSeconds(file: string): Promise<number> {
   try {
@@ -37,7 +54,7 @@ async function probeSeconds(file: string): Promise<number> {
   }
 }
 import { setVideoStatus, setVideoProgress, setVideoFailed } from "../progress.ts";
-import { publicAssetUrl, getPersonaAssets } from "../assets.ts";
+import { publicAssetUrl, getPersonaAssets, hostBuffer } from "../assets.ts";
 import { getPool } from "@influa/core/db/client";
 import { getStorage } from "@influa/core/storage/index";
 import { moderate } from "@influa/core/moderation/gate";
@@ -51,7 +68,6 @@ import { suggestBroll, generateBrollClip } from "@influa/core/pipeline/broll";
 import { normalizeStyle } from "@influa/core/pipeline/style";
 import { faceStyle } from "@influa/core/pipeline/face";
 import { planSegments, sliceAudio, concatTakes } from "@influa/core/pipeline/segments";
-import { atlasUploadMedia } from "@influa/core/providers/index";
 import { releaseVideoHold, releaseVideoLeftover } from "@influa/core/credits/ledger";
 import { sendEmail, emailTemplate } from "@influa/core/email/index";
 import { addCoveredTopic } from "@influa/core/brand/memory";
@@ -68,7 +84,12 @@ export async function registerVideoJobs(boss: PgBoss) {
     deadLetter: "video-pipeline-dlq",
   } as any);
 
-  await boss.work("video-pipeline", { batchSize: 1 }, async ([job]) => {
+  // Concorrência entre vídeos NUM MESMO processo: registramos N workers independentes
+  // (cada um pega 1 job com SKIP LOCKED, com seu próprio retry/DLQ). O pipeline é I/O-bound
+  // (o take fica minutos aguardando o WaveSpeed), então 1 réplica cuida de vários vídeos —
+  // mais barato que N réplicas. batchSize fica 1 (batch do pg-boss é atômico; não serve aqui).
+  const VIDEO_CONCURRENCY = Math.max(1, Number(process.env.VIDEO_CONCURRENCY ?? "4"));
+  const runVideo = async ([job]: any[]) => {
     const { videoId } = job.data as { videoId: string };
     const jobKey = `video:${videoId}`;
     const pool = getPool();
@@ -150,13 +171,16 @@ export async function registerVideoJobs(boss: PgBoss) {
       message: segs.length > 1 ? `Animando ${segs.length} takes em paralelo (lip-sync)` : "Animando o take com lip-sync (2-6 min)",
     });
     // Takes em PARALELO (até 3 por vez) — vídeo longo não espera 1 por 1. Ordem preservada.
-    const takeKeys = await mapLimit(segs, 3, async (seg, i) => {
+    // Takes em PARALELO por vídeo: o WaveSpeed é elástico, então os segmentos de um vídeo
+    // longo geram ao mesmo tempo (a parte lenta). O keyframe de cada um usa Atlas e é
+    // serializado pelo semáforo do Atlas — só o take roda em paralelo no WaveSpeed.
+    const takeKeys = await mapLimit(segs, Math.min(segs.length, 6), async (seg, i) => {
       const segScript = { ...script, shots: script.shots.slice(seg.shotStart, seg.shotEnd) };
       const kf = await step(jobKey, `keyframe_${i}`, async () => {
-        const result = await generateSceneKeyframe({
+        const result = await withTakeRetry(() => generateSceneKeyframe({
           referenceUrls, productUrls, productHint, script: segScript,
           scenePrompt: style.scenePrompt, sceneRefUrl, renderStyle,
-        });
+        }));
         const key = `videos/${videoId}/keyframe_${i}.jpg`;
         await storage.put(key, result.buffer);
         return { output: { key, providerUrl: result.providerUrl, at: Date.now() }, costUsd: PRICING.imagePerUnit };
@@ -165,9 +189,9 @@ export async function registerVideoJobs(boss: PgBoss) {
         const segAudio = storage.getPath(`videos/${videoId}/seg_${i}.mp3`);
         // 1 segmento = áudio inteiro (sem re-cortar); vários = fatia o trecho
         const audioPath = segs.length === 1 ? voicePath : await sliceAudio(voicePath, seg.startSec, seg.endSec, segAudio);
-        const audioUrl = await atlasUploadMedia(fs.readFileSync(audioPath), "audio/mpeg");
+        const audioUrl = await hostBuffer(`videos/${videoId}/audio_${i}.mp3`, fs.readFileSync(audioPath), "audio/mpeg");
         const imageUrl = await publicAssetUrl({ storage_key: (kf as any).key, provider_url: (kf as any).providerUrl, created_at: new Date((kf as any).at ?? 0) });
-        const result = await generateAvatarTake({ audioUrl, imageUrl });
+        const result = await withTakeRetry(() => generateAvatarTake({ audioUrl, imageUrl }));
         const key = `videos/${videoId}/take_${i}.mp4`;
         await storage.put(key, result.buffer);
         return { output: { key }, costUsd: (seg.endSec - seg.startSec) * PRICING.avatarPerSecond };
@@ -287,7 +311,10 @@ export async function registerVideoJobs(boss: PgBoss) {
       /* melhor esforço */
     }
     console.log(`[video] ✔ ${videoId} pronto (custo real $${costUsd.toFixed(2)}, ${used} créditos)`);
-  });
+  };
+  for (let w = 0; w < VIDEO_CONCURRENCY; w++) {
+    await boss.work("video-pipeline", { batchSize: 1 }, runVideo);
+  }
 
   // Falha TERMINAL: devolve créditos e marca failed
   await boss.work("video-pipeline-dlq", { batchSize: 1 }, async ([job]) => {

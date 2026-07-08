@@ -2,7 +2,8 @@
 // Funções puras: recebem URLs, devolvem buffers/arquivos; quem persiste é o worker.
 import { execFile } from "node:child_process";
 import { promisify } from "node:util";
-import { atlasImage, atlasAvatar, downloadToBuffer } from "../providers/atlas.ts";
+import { atlasImage, downloadToBuffer } from "../providers/atlas.ts";
+import { wavespeedAvatar } from "../providers/wavespeed.ts";
 import { elevenLabsTTS, type Alignment } from "../providers/elevenlabs.ts";
 import type { Script } from "../schemas.ts";
 
@@ -67,7 +68,8 @@ export async function generateAvatarTake(opts: {
   imageUrl: string;
   onPoll?: () => void;
 }): Promise<{ providerUrl: string; buffer: Buffer }> {
-  const providerUrl = await atlasAvatar({
+  // Take de avatar agora no WaveSpeed (elástico, cena com movimento, mesmo preço do Atlas).
+  const providerUrl = await wavespeedAvatar({
     audioUrl: opts.audioUrl,
     imageUrl: opts.imageUrl,
     onPoll: opts.onPoll,

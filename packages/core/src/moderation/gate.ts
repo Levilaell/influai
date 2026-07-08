@@ -2,6 +2,7 @@
 // Maior risco jurídico do produto no Brasil: pessoa real/celebridade (direito
 // de imagem + LGPD), menores e NSFW.
 import Anthropic from "@anthropic-ai/sdk";
+import { MODERATION_MODEL } from "../config.ts";
 import { moderationResult, MODERATION_JSON_SCHEMA, type ModerationResult } from "../schemas.ts";
 import "../env.ts";
 
@@ -19,7 +20,7 @@ O campo reason deve ser curto, em PT-BR, e exibível ao usuário final.`;
 export async function moderate(text: string, context: "persona" | "roteiro"): Promise<ModerationResult> {
   const client = new Anthropic();
   const response = await client.messages.create({
-    model: process.env.MODERATION_MODEL ?? "claude-opus-4-8",
+    model: MODERATION_MODEL,
     max_tokens: 1024,
     system: SYSTEM,
     messages: [{ role: "user", content: `Contexto: ${context}\n\nTexto a moderar:\n${text}` }],

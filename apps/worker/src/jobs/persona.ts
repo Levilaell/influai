@@ -15,9 +15,9 @@ import { faceStyle } from "@influa/core/pipeline/face";
 import { mapLimit } from "@influa/core/util/concurrency";
 import { PRICING, usdToCredits, DEFAULTS } from "@influa/core/config";
 
-// Imagens em paralelo. O limite do Atlas é ~2 concorrentes (empírico, não documentado),
-// então default 2 (já corta o tempo pela metade vs. sequencial) e tunável por env.
-const IMAGE_CONCURRENCY = Math.max(1, Number(process.env.ATLAS_IMAGE_CONCURRENCY ?? "2"));
+// Imagens em paralelo. Agora no WaveSpeed (elástico), então geramos TODOS de uma vez:
+// os 4 candidatos juntos e as 3 variações do sheet juntas. Default 6 cobre ambos; tunável por env.
+const IMAGE_CONCURRENCY = Math.max(1, Number(process.env.IMAGE_CONCURRENCY ?? process.env.ATLAS_IMAGE_CONCURRENCY ?? "6"));
 
 const CANDIDATE_LIGHTS = [
   "neutral friendly expression, soft natural light",
@@ -26,9 +26,10 @@ const CANDIDATE_LIGHTS = [
   "gentle smile, golden hour warm light",
 ];
 
+// Só os ângulos que o pipeline de vídeo usa como referência de keyframe
+// (front + three_quarter + speaking). O "profile" era gerado e nunca usado.
 const SHEET_POSES: Record<string, string> = {
   three_quarter: "three-quarter view portrait, slight smile",
-  profile: "profile view portrait",
   speaking: "mid-speech expression, talking to camera, hands slightly visible, upper body",
 };
 

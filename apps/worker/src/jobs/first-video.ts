@@ -8,7 +8,8 @@ import os from "node:os";
 import path from "node:path";
 import { getPool } from "@influa/core/db/client";
 import { getStorage } from "@influa/core/storage/index";
-import { genImage, atlasUploadMedia, downloadToBuffer } from "@influa/core/providers/index";
+import { genImage, downloadToBuffer } from "@influa/core/providers/index";
+import { hostBuffer } from "../assets.ts";
 import { generateNarration, generateAvatarTake } from "@influa/core/pipeline/avatar";
 import { assembleAvatar } from "@influa/core/pipeline/assemble";
 import { sendEmail, emailTemplate } from "@influa/core/email/index";
@@ -90,10 +91,10 @@ async function handleFirstVideo(data: { userId: string; niche?: string; preview?
 
   try {
     const tmp = fs.mkdtempSync(path.join(os.tmpdir(), `fv-${videoId.slice(0, 8)}-`));
-    const imageUrl = await atlasUploadMedia(kfBuf, "image/jpeg");
+    const imageUrl = await hostBuffer(`videos/${videoId}/kf-host.jpg`, kfBuf, "image/jpeg");
     const voiceFile = path.join(tmp, "voice.mp3");
     const narr = await generateNarration({ script, voice, outFile: voiceFile });
-    const audioUrl = await atlasUploadMedia(fs.readFileSync(voiceFile), "audio/mpeg");
+    const audioUrl = await hostBuffer(`videos/${videoId}/voice-host.mp3`, fs.readFileSync(voiceFile), "audio/mpeg");
     const take = await generateAvatarTake({ audioUrl, imageUrl });
     const takeFile = path.join(tmp, "take.mp4");
     fs.writeFileSync(takeFile, take.buffer);

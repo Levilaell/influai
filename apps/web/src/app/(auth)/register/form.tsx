@@ -20,14 +20,38 @@ export function RegisterForm() {
       /* indisponível */
     }
   }, []);
+  // Continuidade da LP: mostra que a prévia veio junto (não é um cadastro "do zero")
+  let previewPersona: { name?: string; tagline?: string } | null = null;
+  try {
+    const p = previewJson ? JSON.parse(previewJson) : null;
+    if (p?.persona?.name) previewPersona = p.persona;
+  } catch {
+    /* prévia malformada — segue sem o banner */
+  }
 
   return (
     <Card className="w-full max-w-sm">
-      <h1 className="mb-1 font-[family-name:var(--font-display)] text-2xl font-semibold">Criar conta grátis</h1>
+      {previewPersona ? (
+        <div className="mb-5 rounded-xl border border-accent/40 bg-accent/5 px-4 py-3">
+          <p className="text-xs uppercase tracking-wide text-accent">Sua prévia está salva ✓</p>
+          <p className="mt-1 text-sm">
+            <b>{previewPersona.name}</b>
+            {previewPersona.tagline ? <span className="text-muted"> — "{previewPersona.tagline}"</span> : null}
+          </p>
+          <p className="mt-1 text-xs text-muted">
+            Falta só criar a conta: a gente gera o rosto dele e você acompanha ao vivo.
+          </p>
+        </div>
+      ) : null}
+      <h1 className="mb-1 font-[family-name:var(--font-display)] text-2xl font-semibold">
+        {previewPersona ? "Último passo" : "Criar conta grátis"}
+      </h1>
       <p className="mb-6 text-sm text-muted">
-        {niche
-          ? `Sua conta pra ${niche} — monte seu influenciador de graça.`
-          : "Seu primeiro influenciador começa aqui — de graça."}
+        {previewPersona
+          ? "Crie a conta grátis pra montar seu influenciador — leva 1 minuto."
+          : niche
+            ? `Sua conta pra ${niche} — monte seu influenciador de graça.`
+            : "Seu primeiro influenciador começa aqui — de graça."}
       </p>
       <form action={action} className="space-y-4">
         <input type="hidden" name="preview" value={previewJson} />

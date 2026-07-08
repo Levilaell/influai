@@ -114,7 +114,7 @@ export function BrandDashboard({
 
       {tab === "Cérebro" && (
         <div className="space-y-6">
-          <BrandBrain brandId={brand.id} initial={profile} />
+          <BrandBrain brandId={brand.id} initial={profile} afterCaptureHref={`/brands/${brand.id}?tab=Vídeos`} />
           <BrandSettings brandId={brand.id} name={brand.name} />
         </div>
       )}

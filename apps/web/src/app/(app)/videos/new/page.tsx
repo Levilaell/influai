@@ -2,7 +2,7 @@ import Link from "next/link";
 import { notFound, redirect } from "next/navigation";
 import { getPool } from "@influa/core/db/client";
 import { requireUserId } from "@/lib/auth";
-import { listBrandAssets, listBrandScenes } from "@/actions/brand";
+import { getBrandProfile, listBrandAssets, listBrandScenes } from "@/actions/brand";
 import { FALLBACK_SCENES } from "@influa/core/pipeline/style";
 import { Card } from "@/components/ui";
 import { NewVideoForm } from "./form";
@@ -36,24 +36,28 @@ export default async function NewVideoPage({
   );
   if (!brand[0]) notFound();
 
-  const [{ rows: personas }, assets, brandScenes] = await Promise.all([
+  const [{ rows: personas }, assets, brandScenes, profile] = await Promise.all([
     getPool().query(
-      `select p.id, p.name, p.niche,
+      `select p.id, p.name, p.niche, p.voice_id,
          (select storage_key from persona_assets a where a.persona_id = p.id and a.kind='front' limit 1) as cover
        from personas p where p.brand_id = $1 and p.status = 'ready' order by p.created_at desc`,
       [brandId]
     ),
     listBrandAssets(brandId),
     listBrandScenes(brandId),
+    getBrandProfile(brandId),
   ]);
   // cenários: fotos do espaço real (kind=cenario) + gerados do Cérebro (texto) + reserva
   const photoScenes = assets
     .filter((a) => a.kind === "cenario")
-    .map((a) => ({ label: `Meu espaço: ${a.label || "foto"}`, prompt: "", refKey: a.storageKey }));
+    .map((a) => ({ label: `Meu espaço: ${a.label || "foto"}`, prompt: "", refKey: a.storageKey, thumbUrl: `/api/files/${a.storageKey}` }));
   const textScenes = (brandScenes.length ? brandScenes : FALLBACK_SCENES.filter((s) => s.label !== "Automático")).map(
-    (s) => ({ label: s.label, prompt: s.prompt, refKey: "" })
+    (s) => ({ label: s.label, prompt: s.prompt, refKey: "", thumbUrl: null })
   );
-  const scenes = [{ label: "Automático", prompt: "", refKey: "" }, ...photoScenes, ...textScenes];
+  const scenes = [{ label: "Automático", prompt: "", refKey: "", thumbUrl: null }, ...photoScenes, ...textScenes];
+  // Placeholder do tema ancorado no negócio (não um exemplo genérico de outro nicho)
+  const nicheLabel = (profile?.niche || personas[0]?.niche || "seu negócio").toLowerCase();
+  const topicPlaceholder = `Ex.: 3 coisas que ninguém te conta sobre ${nicheLabel}`;
   // "mostrar na cena" = produtos/logo (cenário não entra aqui)
   const productAssets = assets.filter((a) => a.kind !== "cenario");
 
@@ -80,12 +84,13 @@ export default async function NewVideoPage({
         <NewVideoForm
           brandId={brandId}
           personas={personas.map((p: any) => ({
-            id: p.id, name: p.name, niche: p.niche,
+            id: p.id, name: p.name, niche: p.niche, voiceId: p.voice_id,
             coverUrl: p.cover ? `/api/files/${p.cover}` : null,
           }))}
           assets={productAssets}
           scenes={scenes}
           preselect={personaParam ?? null}
+          topicPlaceholder={topicPlaceholder}
         />
       )}
     </div>

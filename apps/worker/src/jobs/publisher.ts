@@ -3,7 +3,7 @@
 import type PgBoss from "pg-boss";
 import { getPool } from "@influa/core/db/client";
 import { getStorage } from "@influa/core/storage/index";
-import { atlasUploadMedia } from "@influa/core/providers/index";
+import { hostBuffer } from "../assets.ts";
 import { publishReel } from "@influa/core/social/instagram";
 import fs from "node:fs";
 
@@ -43,9 +43,9 @@ export async function registerPublisher(boss: PgBoss) {
           continue;
         }
 
-        // URL pública que a Meta consegue baixar (mesmo mecanismo do Atlas)
+        // URL pública que a Meta consegue baixar (R2 presigned)
         const buf = fs.readFileSync(getStorage().getPath(v[0].final_storage_key));
-        const videoUrl = await atlasUploadMedia(buf, "video/mp4");
+        const videoUrl = await hostBuffer(`publish/${post.video_id}/reel.mp4`, buf, "video/mp4");
 
         const { mediaId } = await publishReel({
           conn: conn ?? { ig_user_id: "sim", access_token: "sim" },

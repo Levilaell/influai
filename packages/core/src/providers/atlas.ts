@@ -26,11 +26,33 @@ async function safeJson(res: Response): Promise<any> {
 
 const sleep = (ms: number) => new Promise((r) => setTimeout(r, ms));
 
+// ── Portão global de concorrência do Atlas ──────────────────────────────
+// A conta aguenta ~1 prediction concorrente (empírico). SEM isso, um take de vídeo e a
+// geração de rostos de uma persona (filas diferentes no mesmo worker) rodam juntos → 429.
+// O semáforo serializa TODAS as predictions (imagem + vídeo) no processo. Tunável por env.
+const ATLAS_MAX = Math.max(1, Number(process.env.ATLAS_CONCURRENCY ?? "1"));
+let atlasActive = 0;
+const atlasWaiters: (() => void)[] = [];
+async function acquireAtlasSlot(): Promise<void> {
+  if (atlasActive < ATLAS_MAX) {
+    atlasActive++;
+    return;
+  }
+  await new Promise<void>((res) => atlasWaiters.push(res)); // slot transferido ao ser resolvido
+}
+function releaseAtlasSlot(): void {
+  const next = atlasWaiters.shift();
+  if (next) next(); // passa o slot direto (atlasActive não muda)
+  else atlasActive = Math.max(0, atlasActive - 1);
+}
+
 export async function atlasSubmitAndPoll(
   path: string,
   payload: Record<string, unknown>,
   opts: { intervalMs: number; timeoutMs: number } & AtlasCallbacks
 ): Promise<string> {
+  await acquireAtlasSlot();
+  try {
   const res = await fetch(`${ATLAS.baseUrl}${path}`, {
     method: "POST",
     headers: atlasHeaders(),
@@ -64,6 +86,9 @@ export async function atlasSubmitAndPoll(
     opts.onPoll?.();
   }
   throw new Error(`Atlas prediction ${id}: timeout após ${opts.timeoutMs / 1000}s`);
+  } finally {
+    releaseAtlasSlot();
+  }
 }
 
 /** Gera imagem. Com referenceImages => identity lock (modelo /edit). Retorna URL do provedor. */

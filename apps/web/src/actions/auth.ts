@@ -8,7 +8,7 @@ import { autoStartFirstPersona } from "@/lib/first-persona";
 import { env } from "@influa/core/env";
 import { registerInput } from "@influa/core/schemas";
 import { sendEmail, emailTemplate } from "@influa/core/email/index";
-import { createAuthToken, consumeAuthToken } from "@influa/core/auth/tokens";
+import { createAuthToken, consumeAuthToken, validateAuthToken } from "@influa/core/auth/tokens";
 import { signIn, signOut } from "@/lib/auth";
 
 export type FormState = { error?: string; ok?: string } | undefined;
@@ -59,7 +59,10 @@ export async function registerAction(_prev: FormState, formData: FormData): Prom
   // assinatura (paywall no auge do desejo). SIGNUP_BONUS_CREDITS=0 desativa.
   const bonus = Number(process.env.SIGNUP_BONUS_CREDITS ?? "70");
   if (bonus > 0) await grantCredits({ userId, amount: bonus, note: "bônus de boas-vindas" }).catch(() => {});
-  await sendVerification(userId, email.toLowerCase().trim());
+  // Confirmação de e-mail desativada: nada no produto depende dela (reset de senha já prova
+  // posse do e-mail) e o aviso só criava fricção no onboarding. Pra reativar: descomente
+  // abaixo e devolva o <VerifyBanner> em (app)/layout.tsx.
+  // await sendVerification(userId, email.toLowerCase().trim());
   // Leva o nicho da LP pra dentro (pré-preenche a criação da 1ª marca) — continuidade.
   const niche = String(formData.get("niche") ?? "").trim().slice(0, 80);
   // NOVO FLUXO: com nicho, cria a marca + persona (rascunho) e leva o usuário DIRETO à
@@ -100,7 +103,9 @@ export async function resendVerificationAction(userId: string, email: string): P
 
 /** Verifica o e-mail a partir do token do link. */
 export async function verifyEmailAction(token: string): Promise<boolean> {
-  const userId = await consumeAuthToken("verify", token);
+  // validate (não consome) — Outlook/Hotmail pré-carregam o link e consumiriam o token
+  // antes do clique. Verificar e-mail é idempotente, então o token é reutilizável no TTL.
+  const userId = await validateAuthToken("verify", token);
   if (!userId) return false;
   await getPool().query("update users set email_verified_at = now() where id = $1", [userId]);
   return true;

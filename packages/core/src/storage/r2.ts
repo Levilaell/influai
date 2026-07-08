@@ -87,12 +87,12 @@ export class R2StorageDriver implements StorageDriver {
   getPath(key: string): string {
     return path.join(TMP, key);
   }
-  async put(key: string, data: Buffer | string): Promise<string> {
+  async put(key: string, data: Buffer | string, contentType?: string): Promise<string> {
     const buf = typeof data === "string" ? fs.readFileSync(data) : data;
     const local = this.getPath(key);
     fs.mkdirSync(path.dirname(local), { recursive: true });
     fs.writeFileSync(local, buf);
-    const res = await signed("PUT", key, buf, mimeOf(key));
+    const res = await signed("PUT", key, buf, contentType ?? mimeOf(key));
     if (!res.ok) throw new Error(`R2 put ${key}: ${res.status} ${(await res.text().catch(() => "")).slice(0, 160)}`);
     return key;
   }

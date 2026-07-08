@@ -1,5 +1,6 @@
 // Roteiro viral via Claude (structured output) — porte de prototype/stages/script.js
 import Anthropic from "@anthropic-ai/sdk";
+import { CLAUDE_MODEL } from "../config.ts";
 import { scriptSchema, SCRIPT_JSON_SCHEMA, type Script } from "../schemas.ts";
 import { stripEmojis, normalizeHashtags } from "../text.ts";
 import "../env.ts";
@@ -7,7 +8,8 @@ import "../env.ts";
 const SYSTEM = `Você é roteirista de vídeos curtos virais (TikTok/Reels/Shorts) em português brasileiro.
 Regras:
 - O hook abre o vídeo e precisa gerar curiosidade imediata (pergunta, afirmação polêmica ou promessa).
-- Cada shot dura ~8 segundos; a fala (dialogue) de cada shot deve caber confortavelmente nesse tempo (máx ~20 palavras).
+- DURAÇÃO OBRIGATÓRIA: o vídeo inteiro tem entre ~22 e ~30 segundos. Cada shot dura ~6-8 segundos e a fala (dialogue) deve ter NO MÁXIMO ~16 palavras. A soma de TODAS as falas deve ficar entre ~300 e ~410 caracteres — dá pra desenvolver UMA ideia com começo, meio e fim, mas sem enrolação. Nunca passe de ~410 caracteres.
+- OBJETIVO MANDA NO ÂNGULO: se o tema não conversar naturalmente com o objetivo do vídeo, adapte o ÂNGULO do tema para servir o objetivo (ex.: tema "bastidores da cafeteria" com objetivo de vender → bastidores que terminam mostrando o produto e um convite pra visitar/comprar). Nunca ignore o objetivo.
 - A personagem fala direto com a câmera na maioria dos shots (estilo creator).
 - NUNCA use emojis em nenhum campo — a fala é lida por voz sintética e emoji atrapalha.
 - hashtags: sem o símbolo #, sem emoji, sem repetir, minúsculas.
@@ -53,10 +55,12 @@ export async function generateScript(opts: {
   const system = SYSTEM + (intent ? `\n\n${intent}` : "") + sensitiveRules(opts.niche, opts.topic);
   // Params via `as any`: a API aceita thinking adaptive + output_config
   // (validado no smoke test), mas o SDK 0.39 ainda não os tipa.
+  // Haiku 4.5 (e modelos < 4.6) não suportam adaptive thinking — só habilita onde é suportado.
+  const supportsThinking = !/haiku|claude-3|claude-2/i.test(CLAUDE_MODEL);
   const response = await client.messages.create({
-    model: "claude-opus-4-8",
+    model: CLAUDE_MODEL,
     max_tokens: 16000,
-    thinking: { type: "adaptive" },
+    ...(supportsThinking ? { thinking: { type: "adaptive" as const } } : {}),
     system,
     messages: [
       {

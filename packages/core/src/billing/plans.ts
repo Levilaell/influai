@@ -22,19 +22,20 @@ export const PLANS: Record<PlanId, Plan> = {
     features: { scheduling: false, priorityQueue: false, brandAssets: false },
   },
   starter: {
-    id: "starter", name: "Starter", priceBRL: 127, monthlyCredits: 900, approxVideos: 6,
+    // approxVideos calibrado pra vídeos de ~25s (~175 créditos cada)
+    id: "starter", name: "Starter", priceBRL: 47, monthlyCredits: 600, approxVideos: 3,
     limits: { brands: 1, personas: 2, seats: 1 },
     features: { scheduling: true, priorityQueue: false, brandAssets: true },
     stripePriceEnv: "STRIPE_PRICE_STARTER",
   },
   pro: {
-    id: "pro", name: "Pro", priceBRL: 397, monthlyCredits: 3000, approxVideos: 21,
+    id: "pro", name: "Pro", priceBRL: 97, monthlyCredits: 1500, approxVideos: 8,
     limits: { brands: 3, personas: 8, seats: 1 },
     features: { scheduling: true, priorityQueue: true, brandAssets: true },
     stripePriceEnv: "STRIPE_PRICE_PRO",
   },
   studio: {
-    id: "studio", name: "Studio", priceBRL: 997, monthlyCredits: 7500, approxVideos: 54,
+    id: "studio", name: "Studio", priceBRL: 197, monthlyCredits: 3500, approxVideos: 20,
     limits: { brands: -1, personas: -1, seats: 5 },
     features: { scheduling: true, priorityQueue: true, brandAssets: true },
     stripePriceEnv: "STRIPE_PRICE_STUDIO",

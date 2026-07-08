@@ -2,6 +2,7 @@
 // Cérebro da Marca: captura contexto do negócio por PRINT ou TEXTO (caminho C).
 // Aparece na persona pronta; alimenta o motor de ideias na Fábrica.
 import { useRef, useState, useTransition } from "react";
+import { useRouter } from "next/navigation";
 import { captureBrandAction, updateBrandProfileAction } from "@/actions/brand";
 import type { BrandProfile } from "@influa/core/brand/index";
 import { Badge, Button, Card, ErrorText, Input, Label, Textarea } from "@/components/ui";
@@ -26,10 +27,14 @@ function downscale(file: File, maxW = 1024): Promise<string> {
 export function BrandBrain({
   brandId,
   initial,
+  afterCaptureHref,
 }: {
   brandId: string;
   initial: BrandProfile | null;
+  /** Pra onde ir quando o cérebro for criado pela 1ª vez (ex.: aba Vídeos). */
+  afterCaptureHref?: string;
 }) {
+  const router = useRouter();
   const [profile, setProfile] = useState<BrandProfile | null>(initial);
   // "view" = mostra os campos; "fields" = edita à mão; "recapture" = novo print/texto
   const [view, setView] = useState<"view" | "fields" | "recapture">(initial ? "view" : "recapture");
@@ -56,8 +61,11 @@ export function BrandBrain({
         text: mode === "texto" ? text : undefined,
       });
       if (r.error) return setError(r.error);
+      const isFirstCapture = !profile;
       setProfile(r.profile!);
       setView("view");
+      // Cérebro criado: leva direto pra criar vídeo (Recursos é opcional, não etapa).
+      if (isFirstCapture && afterCaptureHref) router.push(afterCaptureHref);
     });
 
   // ── Ver (com botões editar / re-analisar) ──

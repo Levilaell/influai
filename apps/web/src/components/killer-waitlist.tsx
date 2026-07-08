@@ -102,53 +102,71 @@ export function KillerWaitlist(_props: { refCode?: string }) {
   // ── REVELAÇÃO: a máquina de conteúdo dela, ao vivo ──
   if (stage === "reveal" && preview) {
     return (
-      <div className="mx-auto max-w-3xl text-left">
-        <p className="text-center text-sm text-accent">Pronto — essa é a máquina de conteúdo da sua {preview.niche}:</p>
+      <div className="mx-auto max-w-3xl space-y-4 text-left">
+        <p className="text-center text-sm text-accent">
+          Pronto — em segundos, a IA montou a máquina de conteúdo da sua {preview.niche}:
+        </p>
 
-        <div className="mt-5 grid gap-4 md:grid-cols-2">
-          <div className="rounded-2xl border border-line bg-bg-soft p-5">
-            <p className="text-xs uppercase tracking-wide text-muted">Seu influenciador</p>
-            <p className="mt-1 font-[family-name:var(--font-display)] text-xl font-semibold">{preview.persona.name}</p>
-            <p className="text-sm text-accent">{preview.persona.tagline}</p>
-            <p className="mt-2 text-sm text-muted">{preview.persona.look}</p>
-          </div>
-          <div className="rounded-2xl border border-line bg-bg-soft p-5">
-            <p className="text-xs uppercase tracking-wide text-muted">Roteiro pronto — {preview.script.title}</p>
-            <ul className="mt-2 space-y-1.5 text-sm">
-              {preview.script.lines.map((l, i) => (<li key={i} className="text-ink/90">{l}</li>))}
-            </ul>
-            <p className="mt-2 text-xs text-muted">{preview.script.hashtags.map((h) => `#${h}`).join(" ")}</p>
-          </div>
+        {/* 1. O influenciador — o herói da revelação */}
+        <div className="rounded-2xl border border-accent/30 bg-bg-soft p-6">
+          <p className="text-[11px] uppercase tracking-[.12em] text-muted">① Seu influenciador</p>
+          <p className="mt-2 font-[family-name:var(--font-display)] text-2xl font-semibold">
+            {preview.persona.name}
+          </p>
+          <p className="mt-0.5 text-[15px] text-accent">"{preview.persona.tagline}"</p>
+          <p className="mt-3 text-sm italic leading-relaxed text-muted">{preview.persona.look}</p>
         </div>
 
-        <div className="mt-4 rounded-2xl border border-line bg-bg-soft p-5">
-          <p className="text-xs uppercase tracking-wide text-muted">5 ideias de vídeo pra você</p>
-          <ul className="mt-2 space-y-2">
-            {preview.ideas.map((idea, i) => (
-              <li key={i} className="text-sm">
-                <span className="font-medium text-ink">{idea.title}</span>
-                <span className="text-muted"> — “{idea.hook}”</span>
+        {/* 2. Roteiro pronto — falas numeradas, com respiro */}
+        <div className="rounded-2xl border border-line bg-bg-soft p-6">
+          <p className="text-[11px] uppercase tracking-[.12em] text-muted">② Primeiro roteiro, já escrito</p>
+          <p className="mt-2 font-[family-name:var(--font-display)] text-lg font-semibold">{preview.script.title}</p>
+          <ul className="mt-3 space-y-2.5">
+            {preview.script.lines.map((l, i) => (
+              <li key={i} className="flex items-start gap-3 text-sm leading-relaxed text-ink/90">
+                <span className="mt-0.5 flex h-5 w-5 shrink-0 items-center justify-center rounded-full bg-accent/15 text-[10px] font-bold text-accent">
+                  {i + 1}
+                </span>
+                {l}
               </li>
             ))}
           </ul>
+          <p className="mt-4 text-xs text-muted">{preview.script.hashtags.map((h) => `#${h}`).join("  ")}</p>
         </div>
 
-        <div className="mt-7 rounded-2xl border border-accent/40 bg-accent/5 p-6 text-center">
-          <p className="font-[family-name:var(--font-display)] text-xl font-semibold">Isso é só a prévia.</p>
-          <p className="mt-1 text-sm text-muted">
-            Crie sua conta <b>grátis</b> e <b>monte esse influenciador</b> — rosto, voz e roteiros no tom da sua marca,
-            por nossa conta. Depois é só assinar pra ele gravar os vídeos.
+        {/* 3. Ideias — duas colunas com ar */}
+        <div className="rounded-2xl border border-line bg-bg-soft p-6">
+          <p className="text-[11px] uppercase tracking-[.12em] text-muted">③ Próximos 5 vídeos, já pensados</p>
+          <div className="mt-3 grid gap-3 sm:grid-cols-2">
+            {preview.ideas.map((idea, i) => (
+              <div key={i} className={`rounded-xl border border-line bg-bg p-4 ${i === 4 ? "sm:col-span-2" : ""}`}>
+                <p className="text-sm font-medium leading-snug text-ink">{idea.title}</p>
+                <p className="mt-1.5 text-xs leading-relaxed text-muted">“{idea.hook}”</p>
+              </div>
+            ))}
+          </div>
+        </div>
+
+        {/* CTA — transição acolhedora pro cadastro (a prévia vai junto) */}
+        <div className="mt-2 rounded-2xl border border-accent/40 bg-accent/5 p-7 text-center">
+          <p className="font-[family-name:var(--font-display)] text-2xl font-semibold">
+            {preview.persona.name} está pronto pra trabalhar pra você.
           </p>
-          <form onSubmit={goRegister} className="mx-auto mt-4 flex max-w-md flex-col gap-3 sm:flex-row">
+          <p className="mx-auto mt-2 max-w-md text-sm leading-relaxed text-muted">
+            Deixe seu e-mail que a gente <b className="text-ink">guarda tudo isso</b> — persona, roteiro e ideias — e
+            monta o rosto e a voz dele na sua conta <b className="text-ink">grátis</b>. Leva 1 minuto.
+          </p>
+          <form onSubmit={goRegister} className="mx-auto mt-5 flex max-w-md flex-col gap-3 sm:flex-row">
             <input
               name="email" type="email" required placeholder="seu@email.com"
               value={email} onChange={(e) => setEmail(e.target.value)}
               className="w-full rounded-full border border-line bg-bg px-6 py-3.5 text-ink outline-none focus:border-accent"
             />
             <button className="shrink-0 rounded-full bg-accent px-7 py-3.5 font-bold text-accent-ink transition hover:brightness-110">
-              Criar minha conta grátis
+              Continuar — é grátis
             </button>
           </form>
+          <p className="mt-3 text-xs text-muted">Sem cartão. Você só assina quando quiser gerar os vídeos.</p>
           {error && <p className="mt-3 text-sm text-danger">{error}</p>}
         </div>
       </div>

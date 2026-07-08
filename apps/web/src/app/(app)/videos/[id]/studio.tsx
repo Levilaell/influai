@@ -10,6 +10,7 @@ import { MetricsPanel } from "./metrics-panel";
 import { ChangeVoice } from "./change-voice";
 import type { LatestMetrics } from "@/actions/metrics";
 import { PaywallModal } from "@/components/paywall-modal";
+import { toast } from "@/components/toast";
 import type { PlanId } from "@influa/core/billing/plans";
 
 type PlanView = { id: PlanId; name: string; priceBRL: number; approxVideos: number; monthlyCredits: number; features: string[] };
@@ -31,7 +32,7 @@ type VideoState = {
   error: string | null;
   topic: string;
   script: Script;
-  progress: { step?: string; pct?: number; message?: string };
+  progress: { step?: string; pct?: number; message?: string; at?: string };
   personaName: string;
   estimatedCredits: number | null;
   actualCostUsd: number | null;
@@ -41,6 +42,52 @@ type VideoState = {
 };
 
 const PROCESSING = ["queued", "scripting", "keyframing", "voicing", "rendering", "assembling"];
+
+// ── Barra de progresso contínua ──────────────────────────────────────
+// O worker só reporta marcos (20 → 35 → 85%), o que deixava a barra "aos trancos".
+// Aqui a barra avança SOZINHA dentro de cada fase, calibrada pelo tempo médio da fase
+// (o take de lip-sync domina e escala com a duração da fala). Aproximação assintótica:
+// nunca para de andar, mas também nunca estoura o teto da fase antes do marco real.
+function phaseSpec(step: string | undefined, speechSeconds: number) {
+  const SPECS: Record<string, { base: number; target: number; secs: number }> = {
+    queued: { base: 2, target: 18, secs: 30 },
+    narration: { base: 18, target: 34, secs: 30 },
+    avatar: { base: 34, target: 84, secs: Math.max(150, speechSeconds * 9) },
+    broll: { base: 78, target: 84, secs: 45 },
+    assemble: { base: 84, target: 99, secs: 35 },
+  };
+  return SPECS[step ?? "queued"] ?? SPECS.queued;
+}
+
+function SmoothProgress({ video, speechSeconds }: { video: VideoState; speechSeconds: number }) {
+  const [pct, setPct] = useState(video.progress?.pct ?? 2);
+  const mountedAt = useMemo(() => Date.now(), []);
+
+  useEffect(() => {
+    const spec = phaseSpec(video.progress?.step, speechSeconds);
+    const startedAt = video.progress?.at ? new Date(video.progress.at).getTime() : mountedAt;
+    const tick = () => {
+      const elapsed = Math.max(0, (Date.now() - startedAt) / 1000);
+      const eased = spec.base + (spec.target - spec.base) * (1 - Math.exp(-elapsed / spec.secs));
+      setPct((prev) => Math.max(prev, video.progress?.pct ?? 0, Math.min(spec.target, eased)));
+    };
+    tick();
+    const t = setInterval(tick, 500);
+    return () => clearInterval(t);
+  }, [video.progress?.step, video.progress?.at, video.progress?.pct, speechSeconds, mountedAt]);
+
+  const totalMin = Math.max(2, Math.ceil((60 + speechSeconds * 9 + 70) / 60));
+  return (
+    <>
+      <div className="mx-auto h-2 w-full max-w-md overflow-hidden rounded-full bg-bg">
+        <div className="h-full bg-accent transition-all duration-500" style={{ width: `${pct}%` }} />
+      </div>
+      <p className="text-xs text-muted">
+        Vídeos com ~{speechSeconds}s de fala costumam levar ~{totalMin} min no total
+      </p>
+    </>
+  );
+}
 
 export function VideoStudio({
   video: initial,
@@ -103,6 +150,19 @@ export function VideoStudio({
       setVideo((v) => ({ ...v, status: "queued" }));
     });
 
+  // Voltou do checkout (assinou)? Avisa e gera automaticamente (2,5s de folga pro webhook
+  // conceder os créditos). Se ainda faltar crédito, o generate reabre o paywall.
+  useEffect(() => {
+    if (typeof window === "undefined") return;
+    const sp = new URLSearchParams(window.location.search);
+    if (sp.get("subscribed") !== "1") return;
+    toast("Assinatura ativa! Gerando seu vídeo...", "success");
+    window.history.replaceState({}, "", window.location.pathname);
+    const t = setTimeout(() => generate(), 2500);
+    return () => clearTimeout(t);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
+
   const retry = () =>
     startTransition(async () => {
       const r = await retryVideoAction(video.id);
@@ -113,7 +173,7 @@ export function VideoStudio({
 
   return (
     <div className="space-y-8">
-      <PaywallModal open={showPaywall} onClose={() => setShowPaywall(false)} plans={plans} currentPlan={currentPlan} />
+      <PaywallModal open={showPaywall} onClose={() => setShowPaywall(false)} plans={plans} currentPlan={currentPlan} returnPath={`/videos/${video.id}`} />
       <div className="flex items-center justify-between">
         <div>
           <h1 className="font-[family-name:var(--font-display)] text-2xl font-semibold">{script.title}</h1>
@@ -177,12 +237,7 @@ export function VideoStudio({
         <Card className="space-y-4 py-10 text-center">
           <div className="mx-auto h-8 w-8 animate-spin rounded-full border-2 border-line border-t-accent" />
           <p className="font-medium">{video.progress?.message ?? "Na fila..."}</p>
-          <div className="mx-auto h-2 w-full max-w-md overflow-hidden rounded-full bg-bg">
-            <div
-              className="h-full bg-accent transition-all duration-700"
-              style={{ width: `${video.progress?.pct ?? 5}%` }}
-            />
-          </div>
+          <SmoothProgress video={video} speechSeconds={estimate.seconds} />
           <p className="text-xs text-muted">
             Reserva: {video.estimatedCredits ?? "—"} créditos · pode fechar esta página, o vídeo continua
           </p>

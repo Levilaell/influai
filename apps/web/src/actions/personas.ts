@@ -144,3 +144,16 @@ export async function chooseCandidateAction(personaId: string, assetId: string):
   await sendJob("persona-sheet", { personaId, chosenAssetId: assetId }, `persona:${personaId}:sheet`);
   revalidatePath(`/personas/${personaId}`);
 }
+
+/** Renomeia a persona (o influenciador). */
+export async function renamePersonaAction(personaId: string, name: string): Promise<ActionState> {
+  const userId = await requireUserId();
+  const n = String(name ?? "").trim().slice(0, 60);
+  if (!n) return { error: "O nome não pode ficar vazio" };
+  const { rowCount } = await getPool().query(
+    "update personas set name = $3 where id = $1 and user_id = $2",
+    [personaId, userId, n]
+  );
+  if (!rowCount) return { error: "Persona não encontrada" };
+  revalidatePath(`/personas/${personaId}`);
+}
