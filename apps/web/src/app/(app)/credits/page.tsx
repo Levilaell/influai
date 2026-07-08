@@ -24,14 +24,11 @@ export default async function CreditsPage() {
 
   const planViews = (["starter", "pro", "studio"] as const).map((id) => {
     const p = PLANS[id];
+    // Simples de propósito (pedido do Levi): só os limites que diferenciam de verdade.
     const feats: string[] = [
-      `${p.limits.brands === -1 ? "Marcas ilimitadas" : `${p.limits.brands} marca(s)`}`,
       `${p.limits.personas === -1 ? "Personas ilimitadas" : `${p.limits.personas} persona(s)`}`,
+      `${p.limits.brands === -1 ? "Marcas ilimitadas" : `${p.limits.brands} marca(s)`}`,
     ];
-    // Studio sem "agendamento"/"assentos" no card (pedido do Levi 2026-07-08):
-    // assentos não existem como recurso ainda e o card ficava prometendo demais.
-    if (p.features.scheduling && id !== "studio") feats.push("Agendamento de posts");
-    if (p.features.priorityQueue) feats.push("Fila prioritária");
     return {
       id: p.id, name: p.name, priceBRL: p.priceBRL, approxVideos: p.approxVideos,
       monthlyCredits: p.monthlyCredits, features: feats,

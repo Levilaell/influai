@@ -25,13 +25,11 @@ export default async function VideoPage({ params }: { params: Promise<{ id: stri
   const plan = await getUserPlan(userId);
   const planViews = (["starter", "pro", "studio"] as const).map((id) => {
     const p = PLANS[id];
+    // Simples de propósito (mesmo card do /credits): só os limites que diferenciam.
     const feats: string[] = [
-      `${p.limits.brands === -1 ? "Marcas ilimitadas" : `${p.limits.brands} marca(s)`}`,
       `${p.limits.personas === -1 ? "Personas ilimitadas" : `${p.limits.personas} persona(s)`}`,
+      `${p.limits.brands === -1 ? "Marcas ilimitadas" : `${p.limits.brands} marca(s)`}`,
     ];
-    // Mesmo card do /credits: Studio sem "agendamento"/"assentos" (não prometer o que não há).
-    if (p.features.scheduling && id !== "studio") feats.push("Agendamento de posts");
-    if (p.features.priorityQueue) feats.push("Fila prioritária");
     return { id: p.id, name: p.name, priceBRL: p.priceBRL, approxVideos: p.approxVideos, monthlyCredits: p.monthlyCredits, features: feats };
   });
 

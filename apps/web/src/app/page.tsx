@@ -62,24 +62,25 @@ const COMPARE: [string, string, string][] = [
 ];
 
 // Espelha packages/core/billing/plans.ts — mantenha em sincronia com o checkout do Stripe.
+// Planos simples DE PROPÓSITO: só o que diferencia de verdade (vídeos + personas).
 const PLANS = [
   {
     name: "Starter",
     price: "R$ 47",
     featured: false,
-    items: ["~3 vídeos/mês", "2 personas", "Export sem marca d'água"],
+    items: ["~3 vídeos por mês", "2 personas"],
   },
   {
     name: "Pro",
     price: "R$ 97",
     featured: true,
-    items: ["~8 vídeos/mês", "8 personas", "Agendamento de posts", "Fila prioritária"],
+    items: ["~8 vídeos por mês", "8 personas"],
   },
   {
     name: "Studio",
     price: "R$ 197",
     featured: false,
-    items: ["~20 vídeos/mês", "Personas ilimitadas", "5 assentos + prioridade", "Recursos avançados da marca"],
+    items: ["~20 vídeos por mês", "Personas ilimitadas"],
   },
 ];
 
