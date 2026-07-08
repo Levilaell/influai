@@ -4,6 +4,7 @@ import { redirect } from "next/navigation";
 import { auth } from "@/lib/auth";
 import { KillerWaitlist } from "@/components/killer-waitlist";
 import { VideoShowcase } from "@/components/video-showcase";
+import { ContactForm } from "@/components/contact-form";
 
 export const metadata: Metadata = {
   title: "influai. — A fábrica de influenciadores de IA",
@@ -338,6 +339,19 @@ export default async function LandingPage({ searchParams }: { searchParams: Prom
           </div>
         </section>
 
+        {/* ── CONTATO ── */}
+        <section id="contato" className="scroll-mt-6 pb-[64px] md:pb-[92px]">
+          <div className="mx-auto max-w-[640px] px-6 text-center">
+            <h2 className={`${display} mb-3 text-[clamp(1.7rem,3.4vw,2.4rem)] font-semibold leading-[1.08]`}>
+              Ficou com alguma dúvida?
+            </h2>
+            <p className="mb-7 text-muted">
+              Fala com a gente — respondemos por e-mail, geralmente no mesmo dia.
+            </p>
+            <ContactForm source="lp" />
+          </div>
+        </section>
+
         {/* ── CTA (bloco lime) ── */}
         <section className="px-6 pb-[64px] md:pb-[92px]">
           <div className="mx-auto max-w-[1120px] overflow-hidden rounded-[28px] bg-accent px-6 py-14 text-center text-accent-ink md:py-20">
@@ -366,7 +380,9 @@ export default async function LandingPage({ searchParams }: { searchParams: Prom
               <Link href="/privacidade" className="transition hover:text-ink">
                 Privacidade
               </Link>
-              <span>contato@influai.com.br</span>
+              <a href="#contato" className="transition hover:text-ink">
+                Contato
+              </a>
             </div>
           </div>
         </footer>

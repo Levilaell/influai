@@ -32,6 +32,7 @@ export function Sidebar({
     { href: "/brands", label: "Marcas", icon: "◧" },
     { href: "/credits", label: "Créditos", icon: "◈" },
     { href: "/tutorial", label: "Como funciona", icon: "?" },
+    { href: "/suporte", label: "Suporte", icon: "✉" },
     ...(isAdmin ? [{ href: "/admin", label: "Admin", icon: "⚙" }] : []),
   ];
 
