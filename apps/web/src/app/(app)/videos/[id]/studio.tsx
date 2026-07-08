@@ -152,12 +152,15 @@ export function VideoStudio({
 
   // Voltou do checkout (assinou)? Avisa e gera automaticamente (2,5s de folga pro webhook
   // conceder os créditos). Se ainda faltar crédito, o generate reabre o paywall.
+  // Só em RASCUNHO — se o vídeo já está na fila/gerando/pronto, gerar de novo daria
+  // "Vídeo não editável neste estado".
   useEffect(() => {
     if (typeof window === "undefined") return;
     const sp = new URLSearchParams(window.location.search);
     if (sp.get("subscribed") !== "1") return;
-    toast("Assinatura ativa! Gerando seu vídeo...", "success");
     window.history.replaceState({}, "", window.location.pathname);
+    if (!["draft", "estimated"].includes(initial.status)) return;
+    toast("Assinatura ativa! Gerando seu vídeo...", "success");
     const t = setTimeout(() => generate(), 2500);
     return () => clearTimeout(t);
     // eslint-disable-next-line react-hooks/exhaustive-deps

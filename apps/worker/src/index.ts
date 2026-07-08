@@ -9,7 +9,10 @@ import { env } from "@influa/core/env";
 const boss = new PgBoss({
   connectionString: process.env.PGBOSS_DATABASE_URL ?? env("DATABASE_URL"),
   schema: "pgboss",
-  max: 4, // pool session (5432) do pg-boss. 2 réplicas × 4 = 8 < limite 15 do pooler.
+  // Pool SESSION (5432) do pg-boss — limite 15 do pooler Supabase. Conta o DEPLOY:
+  // réplicas novas e velhas coexistem no rollout → 4 réplicas × 3 = 12 < 15. Com max 4
+  // dava 16 > 15 → EMAXCONNSESSION e jobs morrendo durante deploys (visto 2026-07-08).
+  max: 3,
 });
 boss.on("error", (err) => console.error("[pg-boss]", err));
 

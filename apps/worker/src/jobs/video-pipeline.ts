@@ -8,7 +8,7 @@ import os from "node:os";
 import path from "node:path";
 import { execFile } from "node:child_process";
 import { promisify } from "node:util";
-import { step, jobCostUsd } from "../steps.ts";
+import { step, clearStep, jobCostUsd } from "../steps.ts";
 
 const execFileAsync = promisify(execFile);
 
@@ -61,8 +61,8 @@ import { moderate } from "@influa/core/moderation/gate";
 import {
   generateSceneKeyframe,
   generateNarration,
-  generateAvatarTake,
 } from "@influa/core/pipeline/avatar";
+import { wavespeedAvatarSubmit, wavespeedResultUrl, downloadToBuffer } from "@influa/core/providers/index";
 import { assembleAvatar } from "@influa/core/pipeline/assemble";
 import { suggestBroll, generateBrollClip } from "@influa/core/pipeline/broll";
 import { normalizeStyle } from "@influa/core/pipeline/style";
@@ -77,10 +77,12 @@ import { scriptSchema } from "@influa/core/schemas";
 export async function registerVideoJobs(boss: PgBoss) {
   await boss.createQueue("video-pipeline-dlq");
   await boss.createQueue("video-pipeline", {
-    retryLimit: 2,
+    retryLimit: 3,
     retryDelay: 60,
     retryBackoff: true,
-    expireInSeconds: 2400, // take do Kling pode levar 15min de poll
+    // 60min: no tier Bronze da WaveSpeed a task fica na fila DELES antes de rodar; o retry
+    // retoma a mesma task (take_submit cacheado), então expirar cedo só atrapalha.
+    expireInSeconds: 3600,
     deadLetter: "video-pipeline-dlq",
   } as any);
 
@@ -186,15 +188,31 @@ export async function registerVideoJobs(boss: PgBoss) {
         return { output: { key, providerUrl: result.providerUrl, at: Date.now() }, costUsd: PRICING.imagePerUnit };
       });
       const tk = await step(jobKey, `take_${i}`, async () => {
-        const segAudio = storage.getPath(`videos/${videoId}/seg_${i}.mp3`);
-        // 1 segmento = áudio inteiro (sem re-cortar); vários = fatia o trecho
-        const audioPath = segs.length === 1 ? voicePath : await sliceAudio(voicePath, seg.startSec, seg.endSec, segAudio);
-        const audioUrl = await hostBuffer(`videos/${videoId}/audio_${i}.mp3`, fs.readFileSync(audioPath), "audio/mpeg");
-        const imageUrl = await publicAssetUrl({ storage_key: (kf as any).key, provider_url: (kf as any).providerUrl, created_at: new Date((kf as any).at ?? 0) });
-        const result = await withTakeRetry(() => generateAvatarTake({ audioUrl, imageUrl }));
-        const key = `videos/${videoId}/take_${i}.mp4`;
-        await storage.put(key, result.buffer);
-        return { output: { key }, costUsd: (seg.endSec - seg.startSec) * PRICING.avatarPerSecond };
+        // Submit CACHEADO à parte: retry do job (ou restart do worker num deploy) RETOMA a
+        // MESMA task na WaveSpeed em vez de re-submeter — antes cada retry gerava um take
+        // novo e pago, e o anterior terminava órfão lá (usuário via "gerado" + app "falhou").
+        const sub: any = await step(jobKey, `take_submit_${i}`, async () => {
+          const segAudio = storage.getPath(`videos/${videoId}/seg_${i}.mp3`);
+          // 1 segmento = áudio inteiro (sem re-cortar); vários = fatia o trecho
+          const audioPath = segs.length === 1 ? voicePath : await sliceAudio(voicePath, seg.startSec, seg.endSec, segAudio);
+          const audioUrl = await hostBuffer(`videos/${videoId}/audio_${i}.mp3`, fs.readFileSync(audioPath), "audio/mpeg");
+          const imageUrl = await publicAssetUrl({ storage_key: (kf as any).key, provider_url: (kf as any).providerUrl, created_at: new Date((kf as any).at ?? 0) });
+          return { output: { id: await withTakeRetry(() => wavespeedAvatarSubmit({ audioUrl, imageUrl })) } };
+        });
+        try {
+          // 30min de poll: no tier Bronze da WaveSpeed (2 concorrentes) a task pode ficar
+          // um bom tempo na fila DELES antes de rodar.
+          const url = await withTakeRetry(() => wavespeedResultUrl(sub.id, { timeoutMs: 30 * 60 * 1000 }));
+          const buf = await downloadToBuffer(url);
+          const key = `videos/${videoId}/take_${i}.mp4`;
+          await storage.put(key, buf);
+          return { output: { key }, costUsd: (seg.endSec - seg.startSec) * PRICING.avatarPerSecond };
+        } catch (e: any) {
+          // A task morreu DO LADO da WaveSpeed → o id cacheado ficou inútil; limpa pro
+          // próximo retry do job re-submeter do zero.
+          if (/WAVESPEED_TASK_FAILED/.test(String(e?.message))) await clearStep(jobKey, `take_submit_${i}`);
+          throw e;
+        }
       });
       return (tk as any).key as string;
     });
