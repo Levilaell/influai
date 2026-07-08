@@ -19,10 +19,10 @@ boss.on("error", (err) => console.error("[pg-boss]", err));
 await boss.start();
 console.log("[worker] pg-boss iniciado");
 
-// Áudio e imagens de referência sobem para o storage do próprio Atlas via
-// uploadMedia (packages/core/providers) — o Atlas busca do storage dele mesmo.
+// Áudio e imagens de referência sobem pro R2 (presigned URL via hostBuffer em
+// assets.ts) — a WaveSpeed busca de lá. Atlas aposentado.
 // Não depende mais de túnel/PUBLIC_BASE_URL público.
-console.log("[worker] mídia p/ Atlas via uploadMedia (sem dependência de túnel)");
+console.log("[worker] mídia hospedada no R2 (presigned) — providers buscam de lá");
 
 // ── Fila de health (fase 0) ──────────────────────────────────────────
 await boss.createQueue("ping");

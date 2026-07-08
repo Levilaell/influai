@@ -26,7 +26,7 @@ export const PRICING = {
   avatarPerSecond: 0.061, // atlascloud/infinitetalk 720p (MEDIDO: $0.4623/7.56s). 480p = ~$0.03/s.
   scriptFlat: 0.03, // Claude (roteiro + moderação), arredondado pra cima
   ttsFlat: 0.05, // ElevenLabs (conta própria — contabilizado no custo real)
-  brollFlat: 0.17, // clipe de B-roll: still nano-banana (~0.08) + wan-2.6 i2v ~5s (~0.09)
+  brollFlat: 0.22, // B-roll na WaveSpeed: still nano-banana (~0.07) + wan-2.2 i2v 5s 480p (0.15)
 };
 
 // Vozes ElevenLabs premade multilíngues (PT-BR)

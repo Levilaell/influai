@@ -8,7 +8,15 @@ import path from "node:path";
 import { execFile } from "node:child_process";
 import { promisify } from "node:util";
 import { generatePreview } from "@influa/core/growth/preview";
-import { genImage, atlasUploadMedia, downloadToBuffer } from "@influa/core/providers/index";
+import { genImage, downloadToBuffer } from "@influa/core/providers/index";
+import { getStorage } from "@influa/core/storage/index";
+
+// Hospeda mídia no storage (R2/local) e devolve URL pública — Atlas aposentado.
+async function hostPublic(key: string, buf: Buffer, ct: string): Promise<string> {
+  const st = getStorage();
+  await st.put(key, buf, ct);
+  return st.publicUrl(key, 2 * 60 * 60);
+}
 import { generateNarration, generateAvatarTake } from "@influa/core/pipeline/avatar";
 import { assembleAvatar } from "@influa/core/pipeline/assemble";
 import { CURATED_VOICES } from "@influa/core/config";
@@ -52,7 +60,7 @@ async function genOne(item: (typeof NICHES)[number]): Promise<{ slug: string; pe
         prompt: `${persona.look ?? "friendly Brazilian content creator"}, as a social media creator speaking directly to camera, in a setting relevant to "${item.niche}". Face clearly visible with open eyes, natural confident expression, gesturing. Photorealistic, vertical 9:16, cinematic lighting, high detail. No text, no letters, no watermark, no signage.`,
       })
     );
-    const imageUrl = await atlasUploadMedia(kfBuf, "image/jpeg");
+    const imageUrl = await hostPublic(`scripts/${Date.now().toString(36)}-kf.jpg`, kfBuf, "image/jpeg");
 
     // 2) narração (voz casada com o gênero da persona)
     const script: any = {
@@ -64,7 +72,7 @@ async function genOne(item: (typeof NICHES)[number]): Promise<{ slug: string; pe
     };
     const voiceFile = path.join(tmp, "voice.mp3");
     const narr = await generateNarration({ script, voice: voiceFor(persona.look ?? ""), outFile: voiceFile });
-    const audioUrl = await atlasUploadMedia(fs.readFileSync(voiceFile), "audio/mpeg");
+    const audioUrl = await hostPublic(`scripts/${Date.now().toString(36)}-voice.mp3`, fs.readFileSync(voiceFile), "audio/mpeg");
 
     // 3) take (InfiniteTalk) + 4) legendas
     const take = await generateAvatarTake({ audioUrl, imageUrl });

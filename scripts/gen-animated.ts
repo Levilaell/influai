@@ -6,7 +6,15 @@ import path from "node:path";
 import { execFile } from "node:child_process";
 import { promisify } from "node:util";
 import { generatePreview } from "@influa/core/growth/preview";
-import { genImage, atlasUploadMedia, downloadToBuffer } from "@influa/core/providers/index";
+import { genImage, downloadToBuffer } from "@influa/core/providers/index";
+import { getStorage } from "@influa/core/storage/index";
+
+// Hospeda mídia no storage (R2/local) e devolve URL pública — Atlas aposentado.
+async function hostPublic(key: string, buf: Buffer, ct: string): Promise<string> {
+  const st = getStorage();
+  await st.put(key, buf, ct);
+  return st.publicUrl(key, 2 * 60 * 60);
+}
 import { generateNarration, generateAvatarTake } from "@influa/core/pipeline/avatar";
 import { assembleAvatar } from "@influa/core/pipeline/assemble";
 import { CURATED_VOICES } from "@influa/core/config";
@@ -46,7 +54,7 @@ async function genOne(item: (typeof NICHES)[number]) {
         prompt: `A 3D animated character in modern Pixar/Disney render style — a friendly Brazilian content creator, expressive big eyes, warm smile, stylized hair — speaking directly to camera and gesturing, inside a colorful setting relevant to "${item.niche}". Vibrant colors, cinematic 3D lighting, soft shadows, vertical 9:16 portrait, high detail. Stylized cartoon animation, NOT photorealistic. No text, no letters, no watermark.`,
       })
     );
-    const imageUrl = await atlasUploadMedia(kfBuf, "image/jpeg");
+    const imageUrl = await hostPublic(`scripts/${Date.now().toString(36)}-kf.jpg`, kfBuf, "image/jpeg");
 
     const script: any = {
       title: preview.script?.title ?? item.slug,
@@ -57,7 +65,7 @@ async function genOne(item: (typeof NICHES)[number]) {
     };
     const voiceFile = path.join(tmp, "voice.mp3");
     const narr = await generateNarration({ script, voice: voiceFor(persona.look ?? ""), outFile: voiceFile });
-    const audioUrl = await atlasUploadMedia(fs.readFileSync(voiceFile), "audio/mpeg");
+    const audioUrl = await hostPublic(`scripts/${Date.now().toString(36)}-voice.mp3`, fs.readFileSync(voiceFile), "audio/mpeg");
 
     const take = await generateAvatarTake({ audioUrl, imageUrl });
     const takeFile = path.join(tmp, "take.mp4");

@@ -1,9 +1,9 @@
-export { atlasAvatar as genAvatar, downloadToBuffer, atlasSubmitAndPoll, atlasUploadMedia } from "./atlas.ts";
-// Geração de imagem agora no WaveSpeed (mesmo nano-banana-2, mais barato e elástico).
-// Take de avatar: submit/poll separados pro pipeline retomar a MESMA task após retry.
-export { wavespeedImage as genImage, wavespeedAvatarSubmit, wavespeedResultUrl } from "./wavespeed.ts";
+// Tudo de geração roda na WaveSpeed (imagem nano-banana-2, take InfiniteTalk,
+// b-roll wan-2.2). O Atlas foi aposentado — só sobrou o downloadToBuffer (fetch
+// genérico) que mora em atlas.ts por histórico.
+export { downloadToBuffer } from "./atlas.ts";
+export { wavespeedImage as genImage, wavespeedAvatarSubmit, wavespeedResultUrl, wavespeedVideoFromImage } from "./wavespeed.ts";
 export { elevenLabsTTS, resolveVoiceId } from "./elevenlabs.ts";
 
-// Áudio e imagens que o Atlas precisa buscar sobem para o storage do próprio
-// Atlas via atlasUploadMedia (em ./atlas.ts) — robusto, sem túnel nem host de
-// terceiro. Os antigos uploadPublicFallback/hasPublicBaseUrl foram removidos.
+// Mídia que os providers precisam buscar (áudio/keyframe) é hospedada no R2 via
+// presigned URL (worker/assets.ts hostBuffer) — sem túnel nem storage de terceiro.

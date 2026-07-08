@@ -67,6 +67,27 @@ export async function wavespeedAvatarSubmit(opts: { audioUrl: string; imageUrl: 
   });
 }
 
+// B-roll: wan-2.2 i2v ($0.15/5s em 480p — basta: é um corte de ~3,5s sobreposto ao take).
+// Upgrade via env: WAVESPEED_BROLL_MODEL=alibaba/wan-2.6/image-to-video (720p $0.50/5s).
+const BROLL_MODEL = process.env.WAVESPEED_BROLL_MODEL ?? "wavespeed-ai/wan-2.2/image-to-video";
+const BROLL_RESOLUTION = process.env.WAVESPEED_BROLL_RESOLUTION ?? "480p";
+
+/** Clipe curto image-to-video (B-roll): anima um still preservando o aspecto (9:16). */
+export async function wavespeedVideoFromImage(opts: {
+  imageUrl: string;
+  prompt: string;
+  onPoll?: () => void;
+}): Promise<string> {
+  const id = await wavespeedSubmit(BROLL_MODEL, {
+    image: opts.imageUrl,
+    prompt: opts.prompt,
+    resolution: BROLL_RESOLUTION,
+    duration: 5,
+    seed: -1,
+  });
+  return wavespeedResultUrl(id, { onPoll: opts.onPoll });
+}
+
 /** Take de avatar (talking-head com lip-sync) — submit + poll numa chamada só
  *  (fluxos simples; o pipeline de vídeo usa submit/poll separados pra retomar). */
 export async function wavespeedAvatar(opts: { audioUrl: string; imageUrl: string; onPoll?: () => void }): Promise<string> {

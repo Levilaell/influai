@@ -6,7 +6,15 @@ import os from "node:os";
 import path from "node:path";
 import { execFile } from "node:child_process";
 import { promisify } from "node:util";
-import { genImage, atlasUploadMedia, downloadToBuffer } from "@influa/core/providers/index";
+import { genImage, downloadToBuffer } from "@influa/core/providers/index";
+import { getStorage } from "@influa/core/storage/index";
+
+// Hospeda mídia no storage (R2/local) e devolve URL pública — Atlas aposentado.
+async function hostPublic(key: string, buf: Buffer, ct: string): Promise<string> {
+  const st = getStorage();
+  await st.put(key, buf, ct);
+  return st.publicUrl(key, 2 * 60 * 60);
+}
 import { generateNarration, generateAvatarTake } from "@influa/core/pipeline/avatar";
 import { assembleAvatar } from "@influa/core/pipeline/assemble";
 
@@ -84,7 +92,7 @@ async function genOne(c: Creative) {
       prompt: `${c.look}. Face clearly visible with open eyes, natural confident expression. SOLO subject — only this one person, absolutely NO other people anywhere in the frame or background (they would look frozen). Photorealistic, vertical 9:16 portrait, cinematic lighting, high detail, shallow depth of field. No text, no letters, no captions, no watermark, no signage.`,
     })
   );
-  const imageUrl = await atlasUploadMedia(kfBuf, "image/jpeg");
+  const imageUrl = await hostPublic(`scripts/${Date.now().toString(36)}-kf.jpg`, kfBuf, "image/jpeg");
   // 2) narração (voz casada com o ângulo)
   const script: any = {
     title: c.slug,
@@ -95,7 +103,7 @@ async function genOne(c: Creative) {
   };
   const voiceFile = path.join(tmp, "voice.mp3");
   const narr = await generateNarration({ script, voice: c.voice, outFile: voiceFile });
-  const audioUrl = await atlasUploadMedia(fs.readFileSync(voiceFile), "audio/mpeg");
+  const audioUrl = await hostPublic(`scripts/${Date.now().toString(36)}-voice.mp3`, fs.readFileSync(voiceFile), "audio/mpeg");
   // 3) take InfiniteTalk + 4) legendas + música
   const take = await generateAvatarTake({ audioUrl, imageUrl });
   const takeFile = path.join(tmp, "take.mp4");

@@ -1,10 +1,11 @@
 // B-roll: um corte curto de imagem em movimento sobre a fala. O Claude escolhe o
 // momento mais ilustrativo do roteiro e descreve a cena (sem pessoas); geramos um
-// still (nano-banana) e animamos (veo). A montagem corta isso na hora certa.
+// still (nano-banana) e animamos (wan-2.2 i2v) — tudo na WaveSpeed, nada no Atlas.
 import Anthropic from "@anthropic-ai/sdk";
 import { z } from "zod";
 import { CLAUDE_MODEL } from "../config.ts";
-import { atlasImage, atlasVideoFromImage, downloadToBuffer } from "../providers/atlas.ts";
+import { downloadToBuffer } from "../providers/atlas.ts";
+import { wavespeedImage, wavespeedVideoFromImage } from "../providers/wavespeed.ts";
 import type { Script } from "../schemas.ts";
 import "../env.ts";
 
@@ -43,8 +44,8 @@ export async function generateBrollClip(prompt: string, onPoll?: () => void): Pr
   // "No text/letters/signage" evita o texto-lixo alucinado que os modelos costumam
   // queimar em rótulos/placas (aparecia como símbolos estranhos no vídeo).
   const noText = "No people, no faces, no text, no letters, no words, no signage, no watermark, no captions.";
-  const stillUrl = await atlasImage({ prompt: `${prompt}. Photorealistic, vertical 9:16, cinematic lighting, high detail. ${noText}`, onPoll });
-  const clipUrl = await atlasVideoFromImage({
+  const stillUrl = await wavespeedImage({ prompt: `${prompt}. Photorealistic, vertical 9:16, cinematic lighting, high detail. ${noText}`, onPoll });
+  const clipUrl = await wavespeedVideoFromImage({
     imageUrl: stillUrl,
     prompt: `${prompt}. Subtle cinematic motion, smooth camera move, shallow depth of field. ${noText}`,
     onPoll,

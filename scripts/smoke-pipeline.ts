@@ -14,7 +14,15 @@ import {
   generateAvatarTake,
 } from "@influa/core/pipeline/avatar";
 import { assembleAvatar } from "@influa/core/pipeline/assemble";
-import { genImage, atlasUploadMedia } from "@influa/core/providers/index";
+import { genImage } from "@influa/core/providers/index";
+import { getStorage } from "@influa/core/storage/index";
+
+// Hospeda mídia no storage (R2/local) e devolve URL pública — Atlas aposentado.
+async function hostPublic(key: string, buf: Buffer, ct: string): Promise<string> {
+  const st = getStorage();
+  await st.put(key, buf, ct);
+  return st.publicUrl(key, 2 * 60 * 60);
+}
 import { estimateVideoUSD } from "@influa/core/config";
 
 const t0 = Date.now();
@@ -62,7 +70,7 @@ console.log(`  ✓ ${narration.durationSeconds.toFixed(1)}s`);
 
 // 6. Áudio sobe pro storage do próprio Atlas (robusto, sem túnel)
 console.log("6/7 take avatar...");
-const audioUrl = await atlasUploadMedia(fs.readFileSync(voiceFile), "audio/mpeg");
+const audioUrl = await hostPublic(`scripts/${Date.now().toString(36)}-voice.mp3`, fs.readFileSync(voiceFile), "audio/mpeg");
 const take = await generateAvatarTake({ audioUrl, imageUrl: keyframe.providerUrl, onPoll: dot });
 const takeFile = path.join(tmp, "take.mp4");
 fs.writeFileSync(takeFile, take.buffer);
