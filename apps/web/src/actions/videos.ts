@@ -13,6 +13,7 @@ import { normalizeStyle } from "@influa/core/pipeline/style";
 import { holdAndQueueVideo, InsufficientCreditsError } from "@influa/core/credits/ledger";
 import { estimateVideoCredits } from "@influa/core/config";
 import { requireUserId } from "@/lib/auth";
+import { track } from "@influa/core/analytics";
 import { sendJob } from "@/lib/queue";
 
 export type ActionState = { error?: string } | undefined;
@@ -99,6 +100,7 @@ export async function createVideoDraftAction(_prev: ActionState, formData: FormD
      values ($1, $2, $3, $4, $5, 'draft', $6, $7, $8, $9) returning id`,
     [userId, persona.brand_id, personaId, topic, JSON.stringify(script), JSON.stringify(referenceKeys), JSON.stringify(style), len.segments, voiceOverride]
   );
+  await track("video_draft_created", { userId, metadata: { objective: String(formData.get("objective") ?? "") } });
   redirect(`/videos/${v[0].id}`);
 }
 
@@ -152,8 +154,10 @@ export async function enqueueVideoAction(videoId: string): Promise<ActionState> 
   try {
     await holdAndQueueVideo({ userId, videoId, estimate });
   } catch (err) {
-    if (err instanceof InsufficientCreditsError)
+    if (err instanceof InsufficientCreditsError) {
+      await track("paywall_hit", { userId, metadata: { balance: err.balance, needed: err.needed } });
       return { error: `Créditos insuficientes (${err.balance}/${err.needed}). Assine um plano pra criar sem limite.` };
+    }
     throw err;
   }
   // Clique duplo: holdAndQueueVideo retorna false (hold já existe) e o

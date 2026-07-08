@@ -18,6 +18,7 @@ import {
 import { getBrandMemory, memoryForPrompt } from "@influa/core/brand/memory";
 import { objectiveIdeaHint } from "@influa/core/pipeline/format";
 import { requireUserId } from "@/lib/auth";
+import { track } from "@influa/core/analytics";
 
 // Rate-limit leve por usuário para chamadas de LLM grátis (ideias/cérebro).
 // Janela deslizante em memória — suficiente p/ MVP; em produção, Redis/DB.
@@ -108,6 +109,7 @@ export async function captureBrandAction(
     const profile = await extractBrandProfile({ image, text });
     await saveBrandProfile(userId, brandId, profile, image ? "image" : "text");
     await refreshBrandScenes(brandId, profile);
+    await track("brain_created", { userId, metadata: { via: image ? "print" : "texto" } });
     revalidatePath(`/brands/${brandId}`);
     return { profile };
   } catch (err: any) {

@@ -10,6 +10,7 @@ import { registerInput } from "@influa/core/schemas";
 import { sendEmail, emailTemplate } from "@influa/core/email/index";
 import { createAuthToken, consumeAuthToken, validateAuthToken } from "@influa/core/auth/tokens";
 import { signIn, signOut } from "@/lib/auth";
+import { track } from "@influa/core/analytics";
 
 export type FormState = { error?: string; ok?: string } | undefined;
 
@@ -57,6 +58,7 @@ export async function registerAction(_prev: FormState, formData: FormData): Prom
   }
   // Bônus de boas-vindas: cobre CRIAR A PERSONA (~56), nunca um vídeo — o vídeo exige
   // assinatura (paywall no auge do desejo). SIGNUP_BONUS_CREDITS=0 desativa.
+  await track("signup", { userId, metadata: { niche: String(formData.get("niche") ?? "") || null } });
   const bonus = Number(process.env.SIGNUP_BONUS_CREDITS ?? "70");
   if (bonus > 0) await grantCredits({ userId, amount: bonus, note: "bônus de boas-vindas" }).catch(() => {});
   // Confirmação de e-mail desativada: nada no produto depende dela (reset de senha já prova

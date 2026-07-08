@@ -9,6 +9,7 @@ import { setPersonaStatus } from "../progress.ts";
 import { publicAssetUrl, getPersonaAssets } from "../assets.ts";
 import { getPool } from "@influa/core/db/client";
 import { getStorage } from "@influa/core/storage/index";
+import { sendEmail, emailTemplate } from "@influa/core/email/index";
 import { genImage, downloadToBuffer } from "@influa/core/providers/index";
 import { releaseRefHold } from "@influa/core/credits/ledger";
 import { faceStyle } from "@influa/core/pipeline/face";
@@ -38,6 +39,27 @@ const SHEET_POSES: Record<string, string> = {
 async function loadPersona(personaId: string) {
   const { rows } = await getPool().query("select * from personas where id = $1", [personaId]);
   return rows[0];
+}
+
+// E-mail de retorno — MAIOR vazamento do funil (medido 2026-07-08): usuários saem
+// durante a geração dos rostos e nunca voltam (6 de 9 cadastros do dia pararam ali,
+// todos com os 4 rostos prontos esperando). O e-mail traz de volta.
+async function notifyPersona(personaId: string, subject: string, title: string, body: string, ctaLabel: string, path: string) {
+  const { rows } = await getPool().query(
+    "select u.email from users u join personas p on p.user_id = u.id where p.id = $1",
+    [personaId]
+  );
+  const email = rows[0]?.email;
+  if (!email) return;
+  const base = (process.env.PUBLIC_BASE_URL ?? "https://influai.com.br").replace(/\/$/, "");
+  await sendEmail({
+    to: email,
+    subject,
+    html: emailTemplate({ title, body, ctaLabel, ctaUrl: `${base}${path}` }),
+    text: `${body} ${base}${path}`,
+  }).catch(() => {
+    /* best-effort */
+  });
 }
 
 async function insertAsset(opts: {
@@ -113,6 +135,21 @@ export async function registerPersonaJobs(boss: PgBoss) {
     const used = usdToCredits(await jobCostUsd(jobKey));
     await releaseRefHold(jobKey, "sobra da estimativa (candidatos)", used);
     await setPersonaStatus(personaId, "candidates_ready");
+
+    // Só no 1º lote (re-roll = usuário está na página). step() evita duplicar no retry.
+    if (batch === 1) {
+      await step(jobKey, "notify_candidates_ready", async () => {
+        await notifyPersona(
+          personaId,
+          "Seus 4 rostos ficaram prontos ✨",
+          "As opções de rosto estão prontas!",
+          "A IA gerou 4 opções de rosto pro seu influenciador. Escolha a sua favorita — leva 10 segundos e ela vira a identidade permanente da sua marca.",
+          "Escolher o rosto",
+          `/personas/${personaId}`
+        );
+        return { output: {} };
+      });
+    }
   };
   for (let w = 0; w < PERSONA_CONCURRENCY; w++) {
     await boss.work("persona-candidates", { batchSize: 1 }, runCandidates);
@@ -165,6 +202,18 @@ export async function registerPersonaJobs(boss: PgBoss) {
     const used = usdToCredits(await jobCostUsd(jobKey));
     await releaseRefHold(jobKey, "sobra da estimativa (character sheet)", used);
     await setPersonaStatus(personaId, "ready");
+
+    await step(jobKey, "notify_ready", async () => {
+      await notifyPersona(
+        personaId,
+        "Seu influenciador está pronto 🎬",
+        "Identidade travada — bora pro primeiro vídeo!",
+        "O rosto do seu influenciador está travado: ele vai aparecer idêntico em todos os vídeos. Agora é só escolher um tema que a IA escreve o roteiro pra você.",
+        "Criar o primeiro vídeo",
+        `/videos/new?persona=${personaId}`
+      );
+      return { output: {} };
+    });
   };
   for (let w = 0; w < PERSONA_CONCURRENCY; w++) {
     await boss.work("persona-sheet", { batchSize: 1 }, runSheet);

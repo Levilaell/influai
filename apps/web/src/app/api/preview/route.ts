@@ -1,6 +1,7 @@
 // Prévia instantânea da landing (SEM login): nicho -> persona + ideias + roteiro.
 // Rate-limit por IP (é LLM, barato, mas evita abuso). É a isca de conversão da waitlist.
 import { generatePreview } from "@influa/core/growth/preview";
+import { track } from "@influa/core/analytics";
 
 // A prévia faz uma chamada Claude (~10-20s) — evita o timeout curto do Vercel.
 export const maxDuration = 60;
@@ -30,6 +31,7 @@ export async function POST(req: Request) {
 
   try {
     const preview = await generatePreview(niche);
+    await track("preview_generated", { metadata: { niche } });
     return Response.json({ preview });
   } catch (err: any) {
     return Response.json({ error: `Não consegui gerar agora — tenta de novo. ${String(err?.message ?? "").slice(0, 100)}` }, { status: 500 });
