@@ -10,10 +10,10 @@ import { NewVideoForm } from "./form";
 export default async function NewVideoPage({
   searchParams,
 }: {
-  searchParams: Promise<{ brand?: string; persona?: string }>;
+  searchParams: Promise<{ brand?: string; persona?: string; topic?: string }>;
 }) {
   const userId = await requireUserId();
-  const { brand: brandParam, persona: personaParam } = await searchParams;
+  const { brand: brandParam, persona: personaParam, topic: topicParam } = await searchParams;
 
   // Resolve a marca: por ?brand, ou pela persona pré-selecionada
   let brandId = brandParam ?? null;
@@ -90,6 +90,7 @@ export default async function NewVideoPage({
           assets={productAssets}
           scenes={scenes}
           preselect={personaParam ?? null}
+          initialTopic={(topicParam ?? "").slice(0, 300)}
           topicPlaceholder={topicPlaceholder}
         />
       )}

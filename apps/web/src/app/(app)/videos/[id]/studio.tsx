@@ -2,7 +2,7 @@
 // Fábrica de vídeo: draft (roteiro editável + custo AO VIVO) -> progresso -> player.
 import { useCallback, useEffect, useMemo, useState, useTransition } from "react";
 import Link from "next/link";
-import { updateScriptAction, enqueueVideoAction, retryVideoAction, reportVideoAction, deleteVideoAction } from "@/actions/videos";
+import { updateScriptAction, enqueueVideoAction, retryVideoAction, reportVideoAction, deleteVideoAction, backToSetupAction } from "@/actions/videos";
 import { Badge, Button, Card, ErrorText, Input, Textarea } from "@/components/ui";
 import { ConfirmButton } from "@/components/confirm-button";
 import { Scheduler } from "./scheduler";
@@ -225,6 +225,19 @@ export function VideoStudio({
               {pending ? "Enviando..." : "Gerar vídeo"}
             </Button>
           </Card>
+          <p className="text-center text-xs text-muted">
+            <button
+              onClick={() => startTransition(async () => {
+                const r = await backToSetupAction(video.id);
+                if (r?.error) setError(r.error);
+              })}
+              disabled={pending}
+              className="underline transition hover:text-accent"
+            >
+              ← Voltar e ajustar tema, estilo, música ou voz
+            </button>{" "}
+            <span className="text-muted">(o roteiro é grátis — refazer não custa nada)</span>
+          </p>
           <p className="text-center text-xs text-muted">
             Modelos de IA são incríveis, mas ainda podem ter pequenas imperfeições ocasionais (um detalhe
             numa mão, por exemplo) — raro, mas possível. Se sair algo assim, você pode reportar no vídeo pronto.

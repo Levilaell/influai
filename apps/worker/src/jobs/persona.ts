@@ -19,11 +19,13 @@ import { PRICING, usdToCredits, DEFAULTS } from "@influa/core/config";
 // os 4 candidatos juntos e as 3 variações do sheet juntas. Default 6 cobre ambos; tunável por env.
 const IMAGE_CONCURRENCY = Math.max(1, Number(process.env.IMAGE_CONCURRENCY ?? process.env.ATLAS_IMAGE_CONCURRENCY ?? "6"));
 
-const CANDIDATE_LIGHTS = [
-  "neutral friendly expression, soft natural light",
-  "slight warm smile, soft window light",
-  "confident subtle look, studio softbox light",
-  "gentle smile, golden hour warm light",
+// Os 4 candidatos são OPÇÕES DE PESSOA (o usuário escolhe a identidade) — então cada
+// variação muda traços do rosto, cabelo e figurino, não só a luz (só luz = 4 clones).
+const CANDIDATE_VARIATIONS = [
+  "soft rounded facial features, natural loose hair, neutral friendly expression, minimalist casual outfit, soft natural light",
+  "angular well-defined facial features, short or tied-back hairstyle, slight warm smile, earth-tone smart casual outfit, golden hour light",
+  "expressive eyes and delicate features, wavy or curly hair, confident subtle look, modern relaxed outfit, studio softbox light",
+  "striking distinctive features, sleek straight hair in a different tone, gentle smile, elegant minimal outfit, soft window light",
 ];
 
 // Só os ângulos que o pipeline de vídeo usa como referência de keyframe
@@ -94,7 +96,7 @@ export async function registerPersonaJobs(boss: PgBoss) {
       (i) =>
         step(jobKey, `candidate_${i}`, async () => {
           const providerUrl = await genImage({
-            prompt: `${fs.render} portrait of ${persona.description}. ${CANDIDATE_LIGHTS[i]}. ${fs.texture}, looking at camera, plain neutral background, social media creator aesthetic. Vertical 9:16 composition.`,
+            prompt: `${fs.render} portrait of ${persona.description}. This is option ${i + 1} of 4 — a UNIQUE individual clearly distinct from the other options: ${CANDIDATE_VARIATIONS[i]}. ${fs.texture}, looking at camera, plain neutral background, social media creator aesthetic. Vertical 9:16 composition.`,
           });
           const key = `personas/${personaId}/candidate_${batch}_${i}.jpg`;
           await storage.put(key, await downloadToBuffer(providerUrl));

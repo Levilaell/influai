@@ -3,6 +3,7 @@
 // em PT-BR e permite trocar ANTES do primeiro vídeo (troca é grátis; vale pros próximos).
 import { useEffect, useRef, useState, useTransition } from "react";
 import { updatePersonaVoiceAction } from "@/actions/personas";
+import { PlayIcon } from "@/components/music-picker";
 import { Button, ErrorText } from "@/components/ui";
 
 type Voice = { id: string; name: string; preview: string | null; labels: Record<string, string> };
@@ -61,9 +62,9 @@ export function VoiceCard({ personaId, currentVoiceId }: { personaId: string; cu
           <button
             type="button"
             onClick={() => play(current)}
-            className="rounded-full border border-line px-3 py-1 text-xs text-accent transition hover:border-accent"
+            className="flex items-center gap-1.5 rounded-full border border-line px-3 py-1 text-xs text-accent transition hover:border-accent"
           >
-            {playing === current.id ? "parar" : "▶ ouvir"}
+            <PlayIcon /> {playing === current.id ? "parar" : "ouvir"}
           </button>
         )}
         <button

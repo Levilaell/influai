@@ -5,6 +5,22 @@
 import { useEffect, useRef, useState } from "react";
 import { MUSIC_OPTIONS, type Music } from "@influa/core/pipeline/style";
 
+// Ícones em SVG (o caractere ▶ vira EMOJI azul em vários dispositivos)
+export function PlayIcon() {
+  return (
+    <svg width="9" height="9" viewBox="0 0 12 12" fill="currentColor" aria-hidden>
+      <path d="M2.5 1.2v9.6L10.6 6z" />
+    </svg>
+  );
+}
+export function StopIcon() {
+  return (
+    <svg width="9" height="9" viewBox="0 0 12 12" fill="currentColor" aria-hidden>
+      <rect x="2" y="2" width="8" height="8" rx="1" />
+    </svg>
+  );
+}
+
 export function MusicPicker({ value, onChange }: { value: Music; onChange: (m: Music) => void }) {
   const [playing, setPlaying] = useState<Music | null>(null);
   const audioRef = useRef<HTMLAudioElement | null>(null);
@@ -50,13 +66,13 @@ export function MusicPicker({ value, onChange }: { value: Music; onChange: (m: M
                 type="button"
                 onClick={() => toggle(m.key)}
                 title="Ouvir prévia"
-                className={`shrink-0 rounded-full border px-2 py-0.5 text-[11px] transition ${
+                className={`flex h-6 w-6 shrink-0 items-center justify-center rounded-full border transition ${
                   playing === m.key
                     ? "border-accent text-accent"
                     : "border-line text-muted hover:border-accent hover:text-accent"
                 }`}
               >
-                {playing === m.key ? "◼" : "▶"}
+                {playing === m.key ? <StopIcon /> : <PlayIcon />}
               </button>
             )}
           </div>

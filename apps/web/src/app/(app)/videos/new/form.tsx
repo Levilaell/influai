@@ -7,7 +7,7 @@ import { createVideoDraftAction } from "@/actions/videos";
 import { generateIdeasAction, type BrandAsset } from "@/actions/brand";
 import type { VideoIdea } from "@influa/core/brand/index";
 import { DEFAULT_STYLE, type Music } from "@influa/core/pipeline/style";
-import { MusicPicker } from "@/components/music-picker";
+import { MusicPicker, PlayIcon } from "@/components/music-picker";
 import { OBJECTIVES } from "@influa/core/pipeline/format";
 import { Button, Card, ErrorText, Label, Textarea } from "@/components/ui";
 
@@ -21,6 +21,7 @@ export function NewVideoForm({
   assets,
   scenes,
   preselect,
+  initialTopic,
   topicPlaceholder,
 }: {
   brandId: string;
@@ -28,11 +29,12 @@ export function NewVideoForm({
   assets: BrandAsset[];
   scenes: Scene[];
   preselect: string | null;
+  initialTopic: string;
   topicPlaceholder: string;
 }) {
   const [state, action, pending] = useActionState(createVideoDraftAction, undefined);
   const [personaId, setPersonaId] = useState(preselect ?? personas[0]?.id);
-  const [topic, setTopic] = useState("");
+  const [topic, setTopic] = useState(initialTopic);
   const [refs, setRefs] = useState<string[]>([]);
   const toggleRef = (id: string) =>
     setRefs((r) => (r.includes(id) ? r.filter((x) => x !== id) : r.length >= 4 ? r : [...r, id]));
@@ -224,32 +226,29 @@ export function NewVideoForm({
           <div className="space-y-6">
             <div>
               <Label>Cenário <span className="normal-case text-muted">(sob medida da sua marca)</span></Label>
-              <div className="grid grid-cols-2 gap-2 sm:grid-cols-3">
+              <div className="grid grid-cols-2 gap-2">
                 {scenes.map((s, i) => (
                   <button
                     key={i}
                     type="button"
                     onClick={() => setSceneIdx(i)}
-                    className={`overflow-hidden rounded-xl border-2 text-left transition ${
-                      sceneIdx === i ? "border-accent" : "border-line hover:border-accent/40"
+                    className={`flex items-center gap-2.5 rounded-xl border px-3.5 py-3 text-left text-sm leading-snug transition ${
+                      sceneIdx === i ? "border-accent bg-accent/5 font-medium text-ink" : "border-line text-muted hover:border-accent/40"
                     }`}
                   >
                     {s.thumbUrl ? (
                       // eslint-disable-next-line @next/next/no-img-element
-                      <img src={s.thumbUrl} alt={s.label} className="aspect-video w-full object-cover" />
-                    ) : (
-                      <div
-                        className={`flex aspect-video w-full items-center justify-center bg-gradient-to-br px-2 text-center text-[11px] ${
-                          i === 0 ? "from-accent/15 to-bg text-accent" : "from-bg-soft to-bg text-muted"
-                        }`}
-                      >
-                        {i === 0 ? "✦ a IA escolhe pela cena" : s.prompt ? "cenário gerado" : ""}
-                      </div>
-                    )}
-                    <div className={`p-2 text-xs ${sceneIdx === i ? "font-medium text-ink" : "text-muted"}`}>{s.label}</div>
+                      <img src={s.thumbUrl} alt="" className="h-9 w-9 shrink-0 rounded-lg object-cover" />
+                    ) : i === 0 ? (
+                      <span className="shrink-0 text-accent">✦</span>
+                    ) : null}
+                    <span>{s.label}</span>
                   </button>
                 ))}
               </div>
+              <p className="mt-1.5 text-xs text-muted">
+                O cenário vira instrução da cena do vídeo — escolher aqui não gera nada nem custa a mais.
+              </p>
             </div>
 
             <div>
@@ -379,9 +378,9 @@ function VoiceSelect({
           <button
             type="button"
             onClick={() => play(current)}
-            className="rounded-full border border-line px-3 py-1 text-xs text-accent transition hover:border-accent"
+            className="flex items-center gap-1.5 rounded-full border border-line px-3 py-1 text-xs text-accent transition hover:border-accent"
           >
-            {playing === current.id ? "parar" : "▶ ouvir"}
+            <PlayIcon /> {playing === current.id ? "parar" : "ouvir"}
           </button>
         )}
         <button type="button" onClick={() => setOpen((o) => !o)} className="text-xs text-muted underline hover:text-accent">

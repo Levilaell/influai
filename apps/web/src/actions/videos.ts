@@ -102,6 +102,23 @@ export async function createVideoDraftAction(_prev: ActionState, formData: FormD
   redirect(`/videos/${v[0].id}`);
 }
 
+/** Volta do rascunho pro formulário (ajustar tema/estilo/música/voz). Apaga o rascunho —
+ *  o roteiro é grátis, então recomeçar não custa nada pro usuário. */
+export async function backToSetupAction(videoId: string): Promise<ActionState> {
+  const userId = await requireUserId();
+  const pool = getPool();
+  const { rows } = await pool.query(
+    "select persona_id, topic, status from videos where id = $1 and user_id = $2",
+    [videoId, userId]
+  );
+  const v = rows[0];
+  if (!v) return { error: "Vídeo não encontrado" };
+  if (!["draft", "estimated"].includes(v.status)) return { error: "Este vídeo já foi processado" };
+  await pool.query("delete from videos where id = $1", [videoId]);
+  const topic = encodeURIComponent(String(v.topic ?? "").slice(0, 300));
+  redirect(`/videos/new?persona=${v.persona_id}&topic=${topic}`);
+}
+
 /** Salva o roteiro editado (só em draft). */
 export async function updateScriptAction(videoId: string, scriptJson: unknown): Promise<ActionState> {
   const userId = await requireUserId();
