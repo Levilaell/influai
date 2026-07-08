@@ -32,8 +32,12 @@ export async function assembleAvatar(opts: {
   const assFile = path.join(workDir, "captions.ass");
   fs.writeFileSync(assFile, buildAss(chunks));
 
-  // Cadeia de VÍDEO: apenas legendas (sem movimento de câmera).
-  const videoChain = `ass=${escapeFilterPath(assFile)}`;
+  // Cauda de respiro: o take do InfiniteTalk termina EXATAMENTE na última palavra,
+  // o que parecia "vídeo cortado no final". Congela o último frame por TAIL segundos
+  // (e o áudio/música preenchem) — o vídeo respira antes de acabar.
+  const TAIL = 0.7;
+  // Cadeia de VÍDEO: cauda + legendas (sem movimento de câmera).
+  const videoChain = `tpad=stop_mode=clone:stop_duration=${TAIL},ass=${escapeFilterPath(assFile)}`;
 
   const bed = musicBedPath(opts.music);
   const broll =
@@ -100,7 +104,9 @@ export async function assembleAvatar(opts: {
   if (bed) {
     parts.push(`[${musicIdx}:a]volume=0.16[bed]`);
     parts.push(`[bed][0:a]sidechaincompress=threshold=0.03:ratio=8:attack=20:release=300[bd]`);
-    parts.push(`[0:a][bd]amix=inputs=2:duration=first:normalize=0[a]`);
+    // voz com pad = a mix (duration=first) cobre a cauda do vídeo; a música preenche o final
+    parts.push(`[0:a]apad=pad_dur=${TAIL}[vozp]`);
+    parts.push(`[vozp][bd]amix=inputs=2:duration=first:normalize=0[a]`);
     aMap = "[a]";
   }
 

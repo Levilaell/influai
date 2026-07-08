@@ -185,6 +185,41 @@ export default async function LandingPage({ searchParams }: { searchParams: Prom
           </div>
         </div>
 
+        {/* ── EXEMPLOS REAIS (assistíveis, com som) ── */}
+        <section id="exemplos" className="scroll-mt-6 py-[64px] md:py-[92px]">
+          <div className="mx-auto max-w-[1120px] px-6">
+            <h2 className={`${display} mb-3.5 text-[clamp(1.9rem,4vw,2.9rem)] font-semibold leading-[1.08]`}>
+              Veja como ficaria <span className="italic text-accent">pro seu negócio</span>
+            </h2>
+            <p className="mb-10 max-w-[560px] text-muted">
+              Escolha um ramo e assista com som — todos os vídeos abaixo foram gerados 100% pela Influai,
+              do roteiro à legenda.
+            </p>
+            <ExamplesSection />
+          </div>
+        </section>
+
+        {/* ── COMO FUNCIONA ── */}
+        <section className="py-[64px] md:py-[92px]">
+          <div className="mx-auto max-w-[1120px] px-6">
+            <h2 className={`${display} mb-3.5 text-[clamp(1.9rem,4vw,2.9rem)] font-semibold leading-[1.08]`}>
+              Da ideia ao post <span className="italic text-accent">em 3 passos</span>
+            </h2>
+            <p className="mb-12 max-w-[560px] text-muted">
+              Sem editor, sem pular de app em app, sem aparecer. Você descreve; a máquina faz o resto.
+            </p>
+            <div className="grid gap-4 md:grid-cols-3">
+              {STEPS.map((s) => (
+                <div key={s.num} className="rounded-[20px] border border-line bg-bg-soft px-7 py-8">
+                  <div className={`${display} text-[2.6rem] italic leading-none text-accent`}>{s.num}</div>
+                  <h3 className={`${display} mb-2 mt-4 text-xl font-semibold`}>{s.title}</h3>
+                  <p className="text-[.95rem] text-muted">{s.text}</p>
+                </div>
+              ))}
+            </div>
+          </div>
+        </section>
+
         {/* ── CASOS DE USO ── */}
         <section className="py-[64px] md:py-[92px]">
           <div className="mx-auto max-w-[1120px] px-6">
@@ -213,41 +248,6 @@ export default async function LandingPage({ searchParams }: { searchParams: Prom
                 </div>
               ))}
             </div>
-          </div>
-        </section>
-
-        {/* ── COMO FUNCIONA ── */}
-        <section className="py-[64px] md:py-[92px]">
-          <div className="mx-auto max-w-[1120px] px-6">
-            <h2 className={`${display} mb-3.5 text-[clamp(1.9rem,4vw,2.9rem)] font-semibold leading-[1.08]`}>
-              Da ideia ao post <span className="italic text-accent">em 3 passos</span>
-            </h2>
-            <p className="mb-12 max-w-[560px] text-muted">
-              Sem editor, sem pular de app em app, sem aparecer. Você descreve; a máquina faz o resto.
-            </p>
-            <div className="grid gap-4 md:grid-cols-3">
-              {STEPS.map((s) => (
-                <div key={s.num} className="rounded-[20px] border border-line bg-bg-soft px-7 py-8">
-                  <div className={`${display} text-[2.6rem] italic leading-none text-accent`}>{s.num}</div>
-                  <h3 className={`${display} mb-2 mt-4 text-xl font-semibold`}>{s.title}</h3>
-                  <p className="text-[.95rem] text-muted">{s.text}</p>
-                </div>
-              ))}
-            </div>
-          </div>
-        </section>
-
-        {/* ── EXEMPLOS REAIS (assistíveis, com som) ── */}
-        <section id="exemplos" className="scroll-mt-6 py-[64px] md:py-[92px]">
-          <div className="mx-auto max-w-[1120px] px-6">
-            <h2 className={`${display} mb-3.5 text-[clamp(1.9rem,4vw,2.9rem)] font-semibold leading-[1.08]`}>
-              Veja como ficaria <span className="italic text-accent">pro seu negócio</span>
-            </h2>
-            <p className="mb-10 max-w-[560px] text-muted">
-              Escolha um ramo e assista com som — todos os vídeos abaixo foram gerados 100% pela Influai,
-              do roteiro à legenda.
-            </p>
-            <ExamplesSection />
           </div>
         </section>
 

@@ -26,9 +26,9 @@ const OUT = "apps/web/public/examples";
 
 // Refresh 2026-07-08 (pipeline atual: fala 1.1x, gestos, voz fixa v2, WaveSpeed):
 const NICHES = [
-  { slug: "estetica", niche: "clínica de estética facial e skincare", useCase: "Serviço + produto", music: "ambiente" },
   { slug: "moda", niche: "loja de roupa feminina / moda", useCase: "Apresentação de produto", music: "hiphop2" },
-  { slug: "imobiliaria", niche: "corretor de imóveis / imobiliária", useCase: "Autoridade e serviço", music: "inspirador" },
+  { slug: "estetica", niche: "clínica de estética facial e skincare", useCase: "Serviço + produto", music: "ambiente" },
+  { slug: "cafeteria", niche: "cafeteria de bairro especializada em café especial", useCase: "Negócio local", music: "inspirador" },
 ];
 
 function voiceFor(look: string, seed = 0): string {
