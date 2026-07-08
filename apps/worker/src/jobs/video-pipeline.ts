@@ -174,10 +174,9 @@ export async function registerVideoJobs(boss: PgBoss) {
       step: "avatar", pct: 35,
       message: segs.length > 1 ? `Animando ${segs.length} takes em paralelo (lip-sync)` : "Animando o take com lip-sync (2-6 min)",
     });
-    // Takes em PARALELO (até 3 por vez) — vídeo longo não espera 1 por 1. Ordem preservada.
     // Takes em PARALELO por vídeo: o WaveSpeed é elástico, então os segmentos de um vídeo
-    // longo geram ao mesmo tempo (a parte lenta). O keyframe de cada um usa Atlas e é
-    // serializado pelo semáforo do Atlas — só o take roda em paralelo no WaveSpeed.
+    // longo geram ao mesmo tempo (a parte lenta). Keyframe TAMBÉM é WaveSpeed agora —
+    // nada deste pipeline serializa no Atlas.
     const takeKeys = await mapLimit(segs, Math.min(segs.length, 6), async (seg, i) => {
       const segScript = { ...script, shots: script.shots.slice(seg.shotStart, seg.shotEnd) };
       const kf = await step(jobKey, `keyframe_${i}`, async () => {

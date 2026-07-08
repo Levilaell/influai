@@ -79,8 +79,13 @@ export async function registerPersonaJobs(boss: PgBoss) {
     } as any);
   }
 
+  // Jobs de persona simultâneos POR RÉPLICA (mesmo padrão do video-pipeline): cada
+  // registro pega 1 job por vez; N registros = N usuários criando rostos ao mesmo tempo.
+  // I/O-bound (espera o WaveSpeed), então é barato. 2 réplicas × 3 = 6 personas em paralelo.
+  const PERSONA_CONCURRENCY = Math.max(1, Number(process.env.PERSONA_CONCURRENCY ?? "3"));
+
   // ── 4 rostos candidatos ────────────────────────────────────────────
-  await boss.work("persona-candidates", { batchSize: 1 }, async ([job]) => {
+  const runCandidates = async ([job]: any[]) => {
     const { personaId, batch } = job.data as { personaId: string; batch: number };
     const jobKey = `persona:${personaId}:candidates:${batch}`;
     const persona = await loadPersona(personaId);
@@ -108,7 +113,10 @@ export async function registerPersonaJobs(boss: PgBoss) {
     const used = usdToCredits(await jobCostUsd(jobKey));
     await releaseRefHold(jobKey, "sobra da estimativa (candidatos)", used);
     await setPersonaStatus(personaId, "candidates_ready");
-  });
+  };
+  for (let w = 0; w < PERSONA_CONCURRENCY; w++) {
+    await boss.work("persona-candidates", { batchSize: 1 }, runCandidates);
+  }
 
   await boss.work("persona-candidates-dlq", { batchSize: 1 }, async ([job]) => {
     const { personaId } = (job.data as any) ?? {};
@@ -118,7 +126,7 @@ export async function registerPersonaJobs(boss: PgBoss) {
   });
 
   // ── Character sheet identity-locked ────────────────────────────────
-  await boss.work("persona-sheet", { batchSize: 1 }, async ([job]) => {
+  const runSheet = async ([job]: any[]) => {
     const { personaId, chosenAssetId } = job.data as { personaId: string; chosenAssetId: string };
     const jobKey = `persona:${personaId}:sheet`;
     const persona = await loadPersona(personaId);
@@ -157,7 +165,10 @@ export async function registerPersonaJobs(boss: PgBoss) {
     const used = usdToCredits(await jobCostUsd(jobKey));
     await releaseRefHold(jobKey, "sobra da estimativa (character sheet)", used);
     await setPersonaStatus(personaId, "ready");
-  });
+  };
+  for (let w = 0; w < PERSONA_CONCURRENCY; w++) {
+    await boss.work("persona-sheet", { batchSize: 1 }, runSheet);
+  }
 
   await boss.work("persona-sheet-dlq", { batchSize: 1 }, async ([job]) => {
     const { personaId } = (job.data as any) ?? {};

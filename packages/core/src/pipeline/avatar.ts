@@ -2,8 +2,8 @@
 // Funções puras: recebem URLs, devolvem buffers/arquivos; quem persiste é o worker.
 import { execFile } from "node:child_process";
 import { promisify } from "node:util";
-import { atlasImage, downloadToBuffer } from "../providers/atlas.ts";
-import { wavespeedAvatar } from "../providers/wavespeed.ts";
+import { downloadToBuffer } from "../providers/atlas.ts";
+import { wavespeedAvatar, wavespeedImage } from "../providers/wavespeed.ts";
 import { elevenLabsTTS, type Alignment } from "../providers/elevenlabs.ts";
 import type { Script } from "../schemas.ts";
 
@@ -39,7 +39,9 @@ export async function generateSceneKeyframe(opts: {
       ? ` Setting: ${opts.scenePrompt}.`
       : "";
   const render = opts.renderStyle || "photorealistic";
-  const providerUrl = await atlasImage({
+  // WaveSpeed (nano-banana-2/edit, mesmo modelo do Atlas) — elástico: keyframes de vídeos
+  // simultâneos NÃO serializam mais no semáforo global do Atlas.
+  const providerUrl = await wavespeedImage({
     // Talking head como padrão (rosto visível, olhos abertos, geralmente para a câmera)
     // pra evitar poses ruins no keyframe — mas gestos naturais e mostrar produtos são ok.
     // Proibimos texto (modelos alucinam texto-lixo em placas/rótulos).
