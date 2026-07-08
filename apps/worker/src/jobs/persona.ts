@@ -123,7 +123,7 @@ export async function registerPersonaJobs(boss: PgBoss) {
       (i) =>
         step(jobKey, `candidate_${i}`, async () => {
           const providerUrl = await genImage({
-            prompt: `${fs.render} portrait of ${persona.description}. This is option ${i + 1} of 4 — a UNIQUE individual clearly distinct from the other options: ${CANDIDATE_VARIATIONS[i]}. ${fs.texture}, looking at camera, plain neutral background, social media creator aesthetic. Vertical 9:16 composition.`,
+            prompt: `${fs.render} close-up portrait of ${persona.description}. This is option ${i + 1} of 4 — a UNIQUE individual clearly distinct from the other options: ${CANDIDATE_VARIATIONS[i]}. IMPORTANT: ignore any environment or setting mentioned — subject fills the frame from the chest up, plain soft neutral studio background, SOLO subject, no other people, no text or signage. ${fs.texture}, looking at camera. Vertical 9:16 composition.`,
           });
           const key = `personas/${personaId}/candidate_${batch}_${i}.jpg`;
           await storage.put(key, await downloadToBuffer(providerUrl));

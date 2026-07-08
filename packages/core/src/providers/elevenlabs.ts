@@ -79,18 +79,14 @@ export async function elevenLabsTTS(opts: {
     return null;
   };
 
-  // eleven_v3 com timestamps → multilingual_v2 com timestamps → simples
-  for (const model of ["eleven_v3", "eleven_multilingual_v2"]) {
-    try {
-      return { alignment: await withTimestamps(model) };
-    } catch {
-      /* tenta o próximo */
-    }
-  }
+  // MODELO FIXO (consistência é a promessa nº 1 do produto): o fallback silencioso
+  // v3→v2 fazia a MESMA voz soar diferente entre teaser/vídeo/prévia (o v3 ainda tem
+  // alta variação entre gerações). multilingual_v2 = estável e o que gerou as prévias.
+  const MODEL = process.env.ELEVENLABS_MODEL ?? "eleven_multilingual_v2";
   try {
-    await plain("eleven_multilingual_v2");
+    return { alignment: await withTimestamps(MODEL) };
   } catch {
-    await plain("eleven_v3");
+    await plain(MODEL); // mesmo modelo, sem timestamps (legendas caem no proporcional)
   }
   return { alignment: null };
 }

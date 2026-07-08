@@ -31,10 +31,12 @@ export async function autoStartFirstPersona(userId: string, niche: string, previ
   const seedG = userId.split("").reduce((a, c) => a + c.charCodeAt(0), 0);
   const gender: "masculina" | "feminina" =
     p.gender === "masculina" ? "masculina" : p.gender === "feminina" ? "feminina" : seedG % 2 === 0 ? "feminina" : "masculina";
+  // Sem "ambiente" no look: as imagens de IDENTIDADE são retrato limpo (foco na pessoa);
+  // cenário entra só no keyframe de cada vídeo.
   const defaultLook =
     gender === "masculina"
-      ? `homem brasileiro, jovem adulto, carismático, estilo casual moderno, criador de conteúdo para o nicho de ${niche}, ambiente relevante ao negócio`
-      : `mulher brasileira, jovem adulta, carismática, estilo casual moderno, criadora de conteúdo para o nicho de ${niche}, ambiente relevante ao negócio`;
+      ? `homem brasileiro, jovem adulto, carismático, estilo casual moderno, criador de conteúdo para o nicho de ${niche}`
+      : `mulher brasileira, jovem adulta, carismática, estilo casual moderno, criadora de conteúdo para o nicho de ${niche}`;
   const look = (typeof p.look === "string" && p.look) || defaultLook;
   const name = (typeof p.name === "string" && p.name) || "Meu influenciador";
   const brandName = niche ? niche.charAt(0).toUpperCase() + niche.slice(1) : "Minha marca";

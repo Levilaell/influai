@@ -84,12 +84,23 @@ export async function registerAction(_prev: FormState, formData: FormData): Prom
   await signIn("credentials", { email, password, redirectTo });
 }
 
+/** Extrai um destino SEGURO do callbackUrl (só path relativo — nunca host externo). */
+function safeCallback(raw: unknown, fallback = "/brands"): string {
+  try {
+    const u = new URL(String(raw ?? ""), "https://x.local");
+    const path = u.pathname + u.search;
+    return path.startsWith("/") && !path.startsWith("//") && path.length > 1 ? path.slice(0, 300) : fallback;
+  } catch {
+    return fallback;
+  }
+}
+
 export async function loginAction(_prev: FormState, formData: FormData): Promise<FormState> {
   try {
     await signIn("credentials", {
       email: formData.get("email"),
       password: formData.get("password"),
-      redirectTo: "/brands",
+      redirectTo: safeCallback(formData.get("callbackUrl")),
     });
   } catch (err) {
     if (err instanceof AuthError) return { error: "E-mail ou senha incorretos" };
@@ -155,5 +166,6 @@ export async function logoutAction() {
 /** Login/cadastro com Google. Carrega o nicho (se veio da LP) pro 1º vídeo automático. */
 export async function googleSignInAction(formData: FormData) {
   const niche = String(formData.get("niche") ?? "").trim().slice(0, 80);
-  await signIn("google", { redirectTo: niche ? `/brands?niche=${encodeURIComponent(niche)}` : "/brands" });
+  const fallback = niche ? `/brands?niche=${encodeURIComponent(niche)}` : "/brands";
+  await signIn("google", { redirectTo: safeCallback(formData.get("callbackUrl"), fallback) });
 }

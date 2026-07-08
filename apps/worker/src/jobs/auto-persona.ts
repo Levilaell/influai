@@ -70,8 +70,11 @@ export async function registerAutoPersonaJobs(boss: PgBoss) {
 
     // ── 1. Rosto oficial (1 imagem, direto — sem portão de escolha) ─────
     const front: any = await step(jobKey, "front", async () => {
+      // FOCO NO INFLUENCIADOR (feedback 2026-07-08): retrato limpo, SEM cenário —
+      // a description costuma citar ambiente/negócio e a imagem saía dominada pelo
+      // cenário (parede com texto, outras pessoas). Cenário é papel do keyframe do vídeo.
       const providerUrl = await genImage({
-        prompt: `${fstyle.render} portrait of ${persona.description}. Neutral friendly expression, soft natural light, ${fstyle.texture}, looking at camera, plain neutral background, social media creator aesthetic. Vertical 9:16 composition.`,
+        prompt: `${fstyle.render} close-up portrait of ${persona.description}. IMPORTANT: ignore any environment, location or setting mentioned above — the subject fills the frame from the chest up, against a plain soft neutral studio background. SOLO subject, absolutely no other people. Neutral friendly expression, soft natural light, ${fstyle.texture}, looking at camera. No text, no letters, no signage anywhere. Vertical 9:16 composition.`,
       });
       const key = `personas/${personaId}/front.jpg`;
       await storage.put(key, await downloadToBuffer(providerUrl));
