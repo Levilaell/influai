@@ -128,7 +128,14 @@ function musicDir(): string {
 function musicBedPath(music: Music | undefined): string | null {
   if (!music || music === "none") return null;
   const p = path.join(musicDir(), `${music}.mp3`);
-  return fs.existsSync(p) ? p : null;
+  if (!fs.existsSync(p)) {
+    // NUNCA silencioso: o usuário escolheu trilha e o arquivo não está no deploy
+    // (ex.: assets/music excluído por .railwayignore). O vídeo sai sem música,
+    // mas o log grita pra gente ver.
+    console.error(`[assemble] ⚠ TRILHA "${music}" AUSENTE em ${musicDir()} — vídeo sairá SEM música!`);
+    return null;
+  }
+  return p;
 }
 
 type Chunk = { text: string; start: number; end: number };
