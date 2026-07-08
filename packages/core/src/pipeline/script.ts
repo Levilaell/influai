@@ -12,6 +12,7 @@ Regras:
 - OBJETIVO MANDA NO ÂNGULO: se o tema não conversar naturalmente com o objetivo do vídeo, adapte o ÂNGULO do tema para servir o objetivo (ex.: tema "bastidores da cafeteria" com objetivo de vender → bastidores que terminam mostrando o produto e um convite pra visitar/comprar). Nunca ignore o objetivo.
 - A personagem fala direto com a câmera na maioria dos shots (estilo creator).
 - NUNCA use emojis em nenhum campo — a fala é lida por voz sintética e emoji atrapalha.
+- FALA 100% FALÁVEL (TTS): a voz sintética NÃO pronuncia aspas, parênteses ou símbolos — a frase perde o sentido. Ex.: 'comenta "quero" que eu separo um copo' vira "comenta, quero que eu separo um copo" (errado!). Escreva do jeito que se FALA: "comenta a palavra quero que eu separo um copo" ou "manda um QUERO nos comentários". Nunca use aspas, parênteses, barras ou abreviações não-faladas (use "por cento" em vez de %, se precisar) dentro de dialogue/hook.
 - hashtags: sem o símbolo #, sem emoji, sem repetir, minúsculas.
 - visual_prompt sempre em inglês, cinematográfico, vertical 9:16, e coerente de um shot para o outro (mesma roupa, mesmo cenário base, continuidade de luz). A persona é um talking head: o rosto fica visível e ela geralmente fala para a câmera. Gestos naturais e mostrar produtos (à altura do peito) são bem-vindos; só evite descrever poses extremas que estraguem o take (fechar os olhos por muito tempo, virar totalmente de costas, rosto escondido).
 - O último shot fecha com CTA sutil (seguir/comentar).

@@ -16,6 +16,11 @@ export type Alignment = {
   ends: number[];
 };
 
+// Fala ~10% mais rápida (ritmo de creator; vídeo mais enxuto e take ~9% mais barato).
+// Range aceito pela ElevenLabs: 0.7–1.2. Os timestamps já vêm do áudio acelerado,
+// então legendas e lip-sync continuam perfeitamente sincronizados.
+const TTS_SPEED = Math.min(1.2, Math.max(0.7, Number(process.env.ELEVENLABS_SPEED ?? "1.1")));
+
 /**
  * Gera narração mp3 em outFile e retorna o alinhamento por caractere (se disponível).
  * Tenta /with-timestamps (eleven_v3 → multilingual_v2); se falhar, cai no endpoint
@@ -35,7 +40,12 @@ export async function elevenLabsTTS(opts: {
       {
         method: "POST",
         headers: { "xi-api-key": key, "Content-Type": "application/json" },
-        body: JSON.stringify({ text: opts.text, model_id: modelId, language_code: "pt" }),
+        body: JSON.stringify({
+          text: opts.text,
+          model_id: modelId,
+          language_code: "pt",
+          voice_settings: { speed: TTS_SPEED },
+        }),
       }
     );
     if (!res.ok) throw new Error(`ElevenLabs ${modelId} ${res.status}: ${(await res.text()).slice(0, 200)}`);
@@ -56,7 +66,12 @@ export async function elevenLabsTTS(opts: {
       {
         method: "POST",
         headers: { "xi-api-key": key, "Content-Type": "application/json" },
-        body: JSON.stringify({ text: opts.text, model_id: modelId, language_code: "pt" }),
+        body: JSON.stringify({
+          text: opts.text,
+          model_id: modelId,
+          language_code: "pt",
+          voice_settings: { speed: TTS_SPEED },
+        }),
       }
     );
     if (!res.ok) throw new Error(`ElevenLabs ${modelId} ${res.status}: ${(await res.text()).slice(0, 200)}`);

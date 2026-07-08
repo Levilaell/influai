@@ -61,7 +61,10 @@ export async function wavespeedAvatarSubmit(opts: { audioUrl: string; imageUrl: 
   return wavespeedSubmit(`wavespeed-ai/${AVATAR_MODEL}`, {
     image: opts.imageUrl,
     audio: opts.audioUrl,
-    prompt: "person talking directly to camera, natural confident expression",
+    // Expressivo mas contido: gestos e emoção deixam o vídeo menos "estátua",
+    // exagerar gera artefato (mãos). Ajustado a pedido do Levi (2026-07-08).
+    prompt:
+      "person talking directly to camera with natural energy — lively facial expressions that follow the speech, moderate natural hand gestures, engaging social media creator style; subtle, never exaggerated",
     resolution: RESOLUTION,
     seed: -1,
   });

@@ -45,7 +45,7 @@ export async function generateSceneKeyframe(opts: {
     // Talking head como padrão (rosto visível, olhos abertos, geralmente para a câmera)
     // pra evitar poses ruins no keyframe — mas gestos naturais e mostrar produtos são ok.
     // Proibimos texto (modelos alucinam texto-lixo em placas/rótulos).
-    prompt: `The character from the FIRST reference images (identical face and hair), as a social media creator speaking to the viewer. Face clearly visible with open eyes, mostly facing the camera. ${shot.camera}. Scene: ${shot.visual_prompt}.${sceneLine} Natural confident expression and gestures; holding products at chest height is fine, but the face stays visible and engaged (avoid fully turning away or closing the eyes).${productLine} ${render}, vertical 9:16, cinematic lighting, high detail. No text, no letters, no captions, no watermark, no signage anywhere in the image.`,
+    prompt: `The character from the FIRST reference images (identical face and hair), as a social media creator speaking to the viewer. Face clearly visible with open eyes, mostly facing the camera. ${shot.camera}. Scene: ${shot.visual_prompt}.${sceneLine} Natural confident expression, caught mid-speech with a natural hand gesture (hands visible, relaxed and well-formed); holding products at chest height is fine, but the face stays visible and engaged (avoid fully turning away or closing the eyes).${productLine} ${render}, vertical 9:16, cinematic lighting, high detail. No text, no letters, no captions, no watermark, no signage anywhere in the image.`,
     referenceImages: [...persona, ...products, ...sceneRef],
     onPoll: opts.onPoll,
   });
