@@ -142,3 +142,51 @@ export async function adminGrantCreditsAction(_prev: unknown, formData: FormData
   revalidatePath("/admin");
   return { ok: `+${amount} créditos para ${email}` };
 }
+
+// ── Mensagens de contato (LP + /suporte) ─────────────────────────────
+export type ContactMessage = {
+  id: string; name: string; email: string; message: string; source: string;
+  reply: string | null; replied_at: string | null; created_at: string;
+};
+
+export async function listContactMessages(): Promise<ContactMessage[]> {
+  await requireAdmin();
+  const { rows } = await getPool().query(
+    `select id, name, email, message, source, reply, replied_at, created_at
+     from contact_messages order by created_at desc limit 30`
+  );
+  return rows.map((r: any) => ({
+    ...r,
+    replied_at: r.replied_at ? new Date(r.replied_at).toISOString() : null,
+    created_at: new Date(r.created_at).toISOString(),
+  }));
+}
+
+/** Responde uma mensagem SAINDO como contato@influai.com.br — o e-mail pessoal
+ *  do admin nunca aparece pro usuário. */
+export async function replyContactAction(id: string, reply: string): Promise<{ error?: string } | undefined> {
+  await requireAdmin();
+  const text = String(reply ?? "").trim().slice(0, 5000);
+  if (text.length < 2) return { error: "Escreva a resposta" };
+  const { rows } = await getPool().query("select email, name, message from contact_messages where id = $1", [id]);
+  const m = rows[0];
+  if (!m) return { error: "Mensagem não encontrada" };
+  const { sendEmail, emailTemplate } = await import("@influa/core/email/index");
+  try {
+    await sendEmail({
+      to: m.email,
+      from: "Influai <contato@influai.com.br>",
+      replyTo: "contato@influai.com.br",
+      subject: "Re: sua mensagem pra Influai",
+      html: emailTemplate({
+        title: `Oi${m.name ? `, ${m.name}` : ""}!`,
+        body: `${text.replace(/</g, "&lt;").replace(/\n/g, "<br/>")}<br/><br/><span style="color:#66655f">Sua mensagem: "${String(m.message).slice(0, 300).replace(/</g, "&lt;")}"</span>`,
+      }),
+      text: `${text}\n\n— Influai\nSua mensagem: "${String(m.message).slice(0, 300)}"`,
+    });
+  } catch (e: any) {
+    return { error: `Falha ao enviar: ${String(e?.message).slice(0, 120)}` };
+  }
+  await getPool().query("update contact_messages set reply = $2, replied_at = now() where id = $1", [id, text]);
+  revalidatePath("/admin");
+}

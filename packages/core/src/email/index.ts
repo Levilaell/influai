@@ -7,20 +7,30 @@ export async function sendEmail(opts: {
   subject: string;
   html: string;
   text?: string;
+  /** Remetente alternativo (precisa ser @influai.com.br — domínio verificado no Resend). */
+  from?: string;
+  /** Pra onde vai a resposta do destinatário (Reply-To). */
+  replyTo?: string;
 }): Promise<void> {
   const key = process.env.RESEND_API_KEY;
-  const from = process.env.EMAIL_FROM ?? "Influai <nao-responda@influai.com.br>";
+  const from = opts.from ?? process.env.EMAIL_FROM ?? "Influai <nao-responda@influai.com.br>";
 
   if (!key) {
     console.log(
-      `\n──────── [e-mail dev] ────────\nPara: ${opts.to}\nAssunto: ${opts.subject}\n\n${opts.text ?? opts.html.replace(/<[^>]+>/g, "")}\n──────────────────────────────\n`
+      `\n──────── [e-mail dev] ────────\nDe: ${from}\nPara: ${opts.to}\nAssunto: ${opts.subject}\n\n${opts.text ?? opts.html.replace(/<[^>]+>/g, "")}\n──────────────────────────────\n`
     );
     return;
   }
   const res = await fetch("https://api.resend.com/emails", {
     method: "POST",
     headers: { Authorization: `Bearer ${key}`, "Content-Type": "application/json" },
-    body: JSON.stringify({ from, to: opts.to, subject: opts.subject, html: opts.html }),
+    body: JSON.stringify({
+      from,
+      to: opts.to,
+      subject: opts.subject,
+      html: opts.html,
+      ...(opts.replyTo ? { reply_to: opts.replyTo } : {}),
+    }),
   });
   if (!res.ok) throw new Error(`Resend ${res.status}: ${(await res.text()).slice(0, 200)}`);
 }

@@ -41,15 +41,20 @@ export async function contactAction(_prev: ContactState, formData: FormData): Pr
     [userId, name, email, message, source]
   );
 
+  // Aviso interno vai pro CONTACT_EMAIL (pessoal). SEM reply-to de propósito:
+  // responder direto da caixa pessoal exporia o e-mail do Levi — a resposta
+  // profissional é pelo /admin (sai como contato@influai.com.br).
   const inbox = process.env.CONTACT_EMAIL ?? "levilael2@hotmail.com";
   await sendEmail({
     to: inbox,
     subject: `[Contato ${source === "app" ? "plataforma" : "LP"}] ${name || email}`,
     html: emailTemplate({
       title: "Nova mensagem de contato",
-      body: `<b>De:</b> ${name || "—"} &lt;${email}&gt;<br/><b>Origem:</b> ${source}${userId ? ` (user ${userId})` : ""}<br/><br/>${message.replace(/</g, "&lt;").replace(/\n/g, "<br/>")}`,
+      body: `<b>De:</b> ${name || "—"} &lt;${email}&gt;<br/><b>Origem:</b> ${source}${userId ? ` (user ${userId})` : ""}<br/><br/>${message.replace(/</g, "&lt;").replace(/\n/g, "<br/>")}<br/><br/>⚠️ NÃO responda este e-mail direto (exporia seu endereço pessoal). Responda pelo painel — sai como contato@influai.com.br.`,
+      ctaLabel: "Responder pelo Admin",
+      ctaUrl: `${(process.env.PUBLIC_BASE_URL ?? "https://influai.com.br").replace(/\/$/, "")}/admin`,
     }),
-    text: `De: ${name || "—"} <${email}> (${source})\n\n${message}`,
+    text: `De: ${name || "—"} <${email}> (${source})\n\n${message}\n\nResponda pelo /admin (sai como contato@influai.com.br).`,
   }).catch(() => {
     /* best-effort — a mensagem já está no banco */
   });

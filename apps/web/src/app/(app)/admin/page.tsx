@@ -1,11 +1,12 @@
 import { requireAdmin } from "@/lib/auth";
 import { getPool } from "@influa/core/db/client";
 import { PLANS } from "@influa/core/billing/plans";
-import { listOpenReports, listExecutions } from "@/actions/admin";
+import { listOpenReports, listExecutions, listContactMessages } from "@/actions/admin";
 import { Card } from "@/components/ui";
 import { ReportsList } from "./reports-list";
 import { GrantForm } from "./grant-form";
 import { Executions } from "./executions";
+import { ContactInbox } from "./contact-inbox";
 
 export const metadata = { title: "Admin · Influai" };
 export const dynamic = "force-dynamic";
@@ -16,7 +17,7 @@ export default async function AdminPage() {
   const pool = getPool();
   const n = (sql: string) => pool.query(sql).then((r) => Number(r.rows[0]?.n ?? 0));
 
-  const [signups, withPersona, personaReady, withBrain, videoAttempted, videoReady, subscribed, reports, exec] = await Promise.all([
+  const [signups, withPersona, personaReady, withBrain, videoAttempted, videoReady, subscribed, reports, exec, contacts] = await Promise.all([
     n("select count(*)::int n from users"),
     n("select count(distinct user_id)::int n from personas"),
     n("select count(distinct user_id)::int n from personas where status='ready'"),
@@ -26,6 +27,7 @@ export default async function AdminPage() {
     n("select count(distinct user_id)::int n from subscriptions where status in ('active','trialing')"),
     listOpenReports(),
     listExecutions(),
+    listContactMessages(),
   ]);
 
   const funnel = [
@@ -140,6 +142,8 @@ export default async function AdminPage() {
           </div>
         </Card>
       )}
+
+      <ContactInbox messages={contacts} />
 
       <div>
         <h2 className="mb-3 text-lg font-medium">Execuções recentes</h2>
