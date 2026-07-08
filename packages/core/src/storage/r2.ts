@@ -42,8 +42,10 @@ function mimeOf(key: string): string | undefined {
   return MIME[key.slice(key.lastIndexOf(".") + 1).toLowerCase()];
 }
 
-/** URL GET pré-assinada (query) — síncrona. Máx do S3/R2 = 7 dias. */
-function presignedGet(key: string, expires: number): string {
+/** URL GET pré-assinada (query) — síncrona. Máx do S3/R2 = 7 dias.
+ *  downloadAs: força download no browser (response-content-disposition assinado) —
+ *  o atributo HTML `download` é ignorado em redirect cross-origin, então tem que ser aqui. */
+function presignedGet(key: string, expires: number, downloadAs?: string): string {
   expires = Math.min(Math.max(1, Math.floor(expires)), 604800);
   const { amz: a, date } = amz();
   const cred = `${ACCESS()}/${date}/${REGION}/s3/aws4_request`;
@@ -55,6 +57,10 @@ function presignedGet(key: string, expires: number): string {
     ["X-Amz-Expires", String(expires)],
     ["X-Amz-SignedHeaders", "host"],
   ];
+  if (downloadAs) {
+    const safe = downloadAs.replace(/["\\\r\n]/g, "").slice(0, 120) || "video.mp4";
+    params.push(["response-content-disposition", `attachment; filename="${safe}"`]);
+  }
   const host = new URL(ENDPOINT()).host;
   const cq = params.sort().map(([k, v]) => `${encodeURIComponent(k)}=${encodeURIComponent(v)}`).join("&");
   const canonical = ["GET", cu, cq, `host:${host}\n`, "host", "UNSIGNED-PAYLOAD"].join("\n");
@@ -106,8 +112,8 @@ export class R2StorageDriver implements StorageDriver {
     fs.writeFileSync(local, Buffer.from(await res.arrayBuffer()));
     return local;
   }
-  publicUrl(key: string, ttlSeconds = 3600): string {
-    return presignedGet(key, ttlSeconds);
+  publicUrl(key: string, ttlSeconds = 3600, opts?: { downloadAs?: string }): string {
+    return presignedGet(key, ttlSeconds, opts?.downloadAs);
   }
   exists(key: string): boolean {
     return fs.existsSync(this.getPath(key));

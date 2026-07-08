@@ -29,9 +29,9 @@ export default async function VideoPage({ params }: { params: Promise<{ id: stri
       `${p.limits.brands === -1 ? "Marcas ilimitadas" : `${p.limits.brands} marca(s)`}`,
       `${p.limits.personas === -1 ? "Personas ilimitadas" : `${p.limits.personas} persona(s)`}`,
     ];
-    if (p.features.scheduling) feats.push("Agendamento de posts");
+    // Mesmo card do /credits: Studio sem "agendamento"/"assentos" (não prometer o que não há).
+    if (p.features.scheduling && id !== "studio") feats.push("Agendamento de posts");
     if (p.features.priorityQueue) feats.push("Fila prioritária");
-    if (p.limits.seats > 1) feats.push(`${p.limits.seats} assentos de equipe`);
     return { id: p.id, name: p.name, priceBRL: p.priceBRL, approxVideos: p.approxVideos, monthlyCredits: p.monthlyCredits, features: feats };
   });
 

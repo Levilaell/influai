@@ -5,8 +5,9 @@ export interface StorageDriver {
   put(key: string, data: Buffer | string, contentType?: string): Promise<string>;
   /** Caminho absoluto local (para ffmpeg/ffprobe). */
   getPath(key: string): string;
-  /** URL pública temporária que o Atlas/browser consegue buscar. */
-  publicUrl(key: string, ttlSeconds?: number): string;
+  /** URL pública temporária que providers/browser conseguem buscar.
+   *  opts.downloadAs: força download (Content-Disposition attachment) com esse nome. */
+  publicUrl(key: string, ttlSeconds?: number, opts?: { downloadAs?: string }): string;
   exists(key: string): boolean;
   delete(key: string): Promise<void>;
   /** Garante o arquivo em disco local (R2: baixa; local: no-op). Retorna o path. */

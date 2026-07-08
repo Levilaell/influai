@@ -268,7 +268,7 @@ export function VideoStudio({
           </div>
           <div className="flex justify-center gap-3">
             <a
-              href={`${video.finalUrl}?download=1`}
+              href={`${video.finalUrl}?download=1&name=${encodeURIComponent(`${script.title}.mp4`)}`}
               download={`${script.title}.mp4`}
               className="rounded-full bg-accent px-8 py-3 text-sm font-bold text-accent-ink transition hover:brightness-105"
             >

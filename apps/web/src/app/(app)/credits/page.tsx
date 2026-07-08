@@ -28,9 +28,10 @@ export default async function CreditsPage() {
       `${p.limits.brands === -1 ? "Marcas ilimitadas" : `${p.limits.brands} marca(s)`}`,
       `${p.limits.personas === -1 ? "Personas ilimitadas" : `${p.limits.personas} persona(s)`}`,
     ];
-    if (p.features.scheduling) feats.push("Agendamento de posts");
+    // Studio sem "agendamento"/"assentos" no card (pedido do Levi 2026-07-08):
+    // assentos não existem como recurso ainda e o card ficava prometendo demais.
+    if (p.features.scheduling && id !== "studio") feats.push("Agendamento de posts");
     if (p.features.priorityQueue) feats.push("Fila prioritária");
-    if (p.limits.seats > 1) feats.push(`${p.limits.seats} assentos de equipe`);
     return {
       id: p.id, name: p.name, priceBRL: p.priceBRL, approxVideos: p.approxVideos,
       monthlyCredits: p.monthlyCredits, features: feats,

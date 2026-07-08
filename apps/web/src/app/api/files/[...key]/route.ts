@@ -35,10 +35,18 @@ export async function GET(
 
   const storage = getStorage();
 
+  // ?download=1 força download em vez de tocar no browser. O nome vem de ?name=
+  // (ou do fim da key). No R2 isso PRECISA ir assinado na URL (response-content-
+  // disposition) — o atributo HTML `download` é ignorado em redirect cross-origin.
+  const wantsDownload = req.nextUrl.searchParams.get("download") === "1";
+  const downloadAs = wantsDownload
+    ? (req.nextUrl.searchParams.get("name") ?? key.split("/").pop() ?? "arquivo").replace(/["\\\r\n]/g, "").slice(0, 120)
+    : undefined;
+
   // R2: a web não guarda o arquivo — redireciona pro objeto por URL assinada.
   // O R2 suporta Range nativamente, então o player pede direto de lá.
   if (process.env.R2_ACCESS_KEY_ID) {
-    return Response.redirect(storage.publicUrl(key, 3600), 302);
+    return Response.redirect(storage.publicUrl(key, 3600, { downloadAs }), 302);
   }
 
   if (!storage.exists(key)) return new Response("not found", { status: 404 });
@@ -75,6 +83,7 @@ export async function GET(
       "Content-Length": String(stat.size),
       "Accept-Ranges": "bytes",
       "Cache-Control": "private, max-age=3600",
+      ...(downloadAs ? { "Content-Disposition": `attachment; filename="${downloadAs}"` } : {}),
     },
   });
 }
