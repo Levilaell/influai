@@ -31,11 +31,17 @@ const NICHES = [
   { slug: "cafeteria", niche: "cafeteria de bairro especializada em café especial", useCase: "Negócio local", music: "inspirador" },
 ];
 
-function voiceFor(look: string, seed = 0): string {
-  const female = /mulher|feminin|garota|moça|jovem de|ela /i.test(look);
-  const pool = CURATED_VOICES.filter((v) => (female ? v.gender === "feminina" : v.gender === "masculina"));
+// Usa o GENDER explícito da prévia (a regex no look falhava: "esteticista..." não
+// casa com /mulher|feminin/ → mulher saía com voz de homem). Regex é só fallback.
+function voiceFor(persona: { gender?: string; look?: string }, seed = 0): { id: string; label: string } {
+  const g =
+    persona.gender === "feminina" || persona.gender === "masculina"
+      ? persona.gender
+      : /mulher|feminin|garota|moça|ela /i.test(persona.look ?? "") ? "feminina" : "masculina";
+  const pool = CURATED_VOICES.filter((v) => v.gender === g);
   const list = pool.length ? pool : CURATED_VOICES;
-  return list[Math.abs(seed) % list.length].id;
+  const v = list[Math.abs(seed) % list.length];
+  return { id: v.id, label: `${v.name} (${v.gender})` };
 }
 
 async function genOne(item: (typeof NICHES)[number]): Promise<{ slug: string; persona: string; seconds: number } | null> {
@@ -66,7 +72,9 @@ async function genOne(item: (typeof NICHES)[number]): Promise<{ slug: string; pe
       shots: lines.map((d) => ({ visual_prompt: "x", dialogue: d, camera: "medium shot" })),
     };
     const voiceFile = path.join(tmp, "voice.mp3");
-    const narr = await generateNarration({ script, voice: voiceFor(persona.look ?? "", item.slug.split("").reduce((a, c) => a + c.charCodeAt(0), 0)), outFile: voiceFile });
+    const voice = voiceFor(persona, item.slug.split("").reduce((a, c) => a + c.charCodeAt(0), 0));
+    console.log(`[gen] ${item.slug}: persona ${persona.name} (${persona.gender ?? "?"}) → voz ${voice.label}`);
+    const narr = await generateNarration({ script, voice: voice.id, outFile: voiceFile });
     const audioUrl = await hostPublic(`scripts/${Date.now().toString(36)}-voice.mp3`, fs.readFileSync(voiceFile), "audio/mpeg");
 
     // 3) take (InfiniteTalk) + 4) legendas
@@ -128,14 +136,16 @@ async function withRetry(item: (typeof NICHES)[number]) {
   return null;
 }
 
+const only = process.argv.slice(2);
+const TARGETS = only.length ? NICHES.filter((n) => only.includes(n.slug)) : NICHES;
 const started = Date.now();
 // concorrência 1: não compete com o worker de produção (E2E) pelo Atlas
-const results = (await mapLimit(NICHES, 3, withRetry)).filter(Boolean) as { slug: string; persona: string; seconds: number }[];
+const results = (await mapLimit(TARGETS, 3, withRetry)).filter(Boolean) as { slug: string; persona: string; seconds: number }[];
 const avg = results.length ? Math.round(results.reduce((a, b) => a + b.seconds, 0) / results.length) : 0;
 console.log("\n════════ RESUMO ════════");
 for (const r of results) console.log(`  ${r.slug.padEnd(14)} ${r.persona.padEnd(22)} ${r.seconds}s`);
 console.log(`  ───────────────────────`);
-console.log(`  gerados: ${results.length}/${NICHES.length}`);
+console.log(`  gerados: ${results.length}/${TARGETS.length}`);
 console.log(`  tempo MÉDIO por vídeo: ${avg}s (~${(avg / 60).toFixed(1)} min)`);
 console.log(`  wall-clock total (concorrência 2): ${Math.round((Date.now() - started) / 1000)}s`);
 process.exit(0);
