@@ -28,10 +28,18 @@ export default async function handler(req, res) {
   }
 
   const wa = digitos.length >= 12 ? digitos : '55' + digitos;
+
+  // formata a partir dos dígitos, nunca do texto cru: evita que backtick ou
+  // asterisco no input quebre o parse_mode Markdown e derrube o envio
+  const nacional = digitos.length > 11 ? digitos.slice(-11) : digitos;
+  const bonito = nacional.length === 11
+    ? `(${nacional.slice(0,2)}) ${nacional.slice(2,7)}-${nacional.slice(7)}`
+    : `(${nacional.slice(0,2)}) ${nacional.slice(2,6)}-${nacional.slice(6)}`;
+
   const texto = [
     '🚨 *DEU CERTO, IRMÃO* 🚨',
     '',
-    '📱 WhatsApp: `' + String(whatsapp).slice(0, 40) + '`',
+    '📱 WhatsApp: `' + bonito + '`',
     '🔗 Abrir: https://wa.me/' + wa,
     recado ? '\n💬 Recadinho dela:\n_' + String(recado).slice(0, 300).replace(/[_*[\]`]/g, '') + '_' : '\n💬 Sem recadinho.',
     '',
