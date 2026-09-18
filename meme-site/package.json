@@ -1,8 +1,0 @@
-{
-  "name": "curriculo-de-pretendente",
-  "private": true,
-  "type": "module",
-  "version": "1.0.0",
-  "description": "Site meme para conseguir um WhatsApp. Projeto independente do monorepo.",
-  "engines": { "node": ">=20" }
-}

@@ -1,4 +1,10 @@
 // Recebe o WhatsApp e manda pro Telegram.
+//
+// Fica na raiz do repo, e não em meme-site/, porque a Vercel só reconhece
+// serverless functions em api/ na raiz do projeto — e o Root Directory do
+// projeto é a raiz (ver vercel.json, que aponta o outputDirectory para
+// meme-site/).
+//
 // Env vars necessárias na Vercel: TELEGRAM_BOT_TOKEN, TELEGRAM_CHAT_ID
 
 export default async function handler(req, res) {
@@ -33,8 +39,8 @@ export default async function handler(req, res) {
   // asterisco no input quebre o parse_mode Markdown e derrube o envio
   const nacional = digitos.length > 11 ? digitos.slice(-11) : digitos;
   const bonito = nacional.length === 11
-    ? `(${nacional.slice(0,2)}) ${nacional.slice(2,7)}-${nacional.slice(7)}`
-    : `(${nacional.slice(0,2)}) ${nacional.slice(2,6)}-${nacional.slice(6)}`;
+    ? `(${nacional.slice(0, 2)}) ${nacional.slice(2, 7)}-${nacional.slice(7)}`
+    : `(${nacional.slice(0, 2)}) ${nacional.slice(2, 6)}-${nacional.slice(6)}`;
 
   const texto = [
     '🚨 *DEU CERTO, IRMÃO* 🚨',
