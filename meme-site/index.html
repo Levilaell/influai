@@ -92,6 +92,15 @@ td{background:#fff}
 .barrinha i{display:block;height:100%;width:0;background:repeating-linear-gradient(90deg,#000080,#000080 8px,#1084d0 8px,#1084d0 16px);transition:width 1.4s cubic-bezier(.2,.9,.2,1)}
 .qualidade small{display:block;margin-top:4px;font-size:12px;color:#444}
 
+/* ===================== FERRAMENTAS ===================== */
+.ferramenta{background:#dfdfdf;border:2px solid #fff;border-right-color:#404040;border-bottom-color:#404040;padding:12px;margin-bottom:16px}
+.ferramenta > b{display:block;font-size:14px;color:#000080;margin-bottom:8px}
+.visor{background:#000;color:var(--verde);font-family:"Courier New",monospace;font-size:14px;line-height:1.5;padding:12px;border:2px inset #808080;min-height:76px;display:flex;align-items:center;margin-bottom:10px}
+.visor.ok{color:var(--amarelo)}
+.ferramenta .btn{width:100%;font-size:15px;padding:12px}
+.btn.btnRoxo{background:linear-gradient(#b026ff,#6a0dad);color:#fff;text-shadow:1px 1px 0 #000}
+.ferramenta small{display:block;margin-top:8px;font-size:11px;color:#444;line-height:1.5}
+
 /* ===================== DEPOIMENTOS ===================== */
 .depo{background:#fff;border:2px solid #808080;padding:12px;margin-bottom:12px;font-size:14px}
 .depo .estrelas{color:#ff8c00;font-size:16px;letter-spacing:2px}
@@ -186,14 +195,19 @@ footer{text-align:center;font-size:12px;color:#fff;margin-top:34px;line-height:1
             <tr><th>Status</th><td>Solteiro (não por falta de talento, por falta de sorte)</td></tr>
             <tr><th>Estado de conservação</th><td>Seminovo, poucas marcas de uso</td></tr>
             <tr><th>Garantia</th><td>Vitalícia ⭐</td></tr>
-            <tr><th>Defeitos conhecidos</th><td id="fichaDefeitos">Fala demais quando fica nervoso</td></tr>
+            <tr><th>Advertências</th><td id="fichaDefeitos">—</td></tr>
             <tr><th>Consumo</th><td>Baixo. Aceito açaí pós-treino como forma de pagamento</td></tr>
             <tr><th>Disponibilidade</th><td>Academia, viagem de última hora e conversa às 23h47</td></tr>
             <tr><th>Interesse atual</th><td>Conversar contigo sem parecer desesperado (falhei)</td></tr>
           </table>
         </div>
       </div>
-      <p style="margin-top:16px;font-size:14px;background:#ffffcc;border:2px dashed #f00;padding:10px">
+      <p style="margin-top:16px;font-size:13px;background:#eef;border:2px solid #808080;padding:10px">
+        <b>⚠️ Outras advertências do produto:</b> chego 10 minutos adiantado e fico ansioso se você atrasa •
+        não sei guardar surpresa, conto antes da hora • sou exigente demais com playlist •
+        acho que 6h da manhã é um horário razoável em dia de viagem.
+      </p>
+      <p style="margin-top:12px;font-size:14px;background:#ffffcc;border:2px dashed #f00;padding:10px">
         <b>💡 Resumo executivo:</b> a gente não se conhece. Eu tentei puxar assunto no Instagram,
         a conversa não engatou, e tá tudo bem. Só que em vez de mandar <b>"oi"</b> pela terceira vez,
         eu preferi construir um site inteiro. Chamo isso de <b>iniciativa</b>.
@@ -250,6 +264,38 @@ footer{text-align:center;font-size:12px;color:#fff;margin-top:34px;line-height:1
     </div>
   </section>
 
+
+  <!-- ============ DESBLOQUEIO CRIATIVO ============ -->
+  <section class="janela">
+    <div class="barra"><span>🧠 desbloqueio_criativo.exe — v1.0 (freeware)</span><span class="btns"><i>_</i><i>▢</i><i>x</i></span></div>
+    <div class="corpo">
+      <h2>🧠 Depto. de desbloqueio criativo</h2>
+      <p style="font-size:14px;margin-bottom:16px;color:#333">
+        Vi que você anda travada e achando que nada do seu conteúdo fica bom o suficiente.
+        Então abri um departamento inteiro pra isso. Tem dois funcionários e os dois sou eu.
+      </p>
+
+      <div class="ferramenta">
+        <b>🔧 FERRAMENTA 1 — Gerador de ideia</b>
+        <div class="visor" id="visorIdeia">[ aguardando comando do operador ]</div>
+        <button class="btn btnRoxo" id="btnIdeia" type="button">🎲 GERAR IDEIA</button>
+        <small>ideias geradas nesta sessão: <b id="contIdeias">0</b> · aproveitamento estimado: 1 a cada 7 — o que já é bem acima da média do mercado</small>
+      </div>
+
+      <div class="ferramenta">
+        <b>🔧 FERRAMENTA 2 — "Será que tá bom?"</b>
+        <div class="visor ok" id="visorBom">[ nenhuma consulta registrada ]</div>
+        <button class="btn" id="btnBom" type="button">🤔 ESSE CONTEÚDO TÁ BOM?</button>
+        <small>* esta ferramenta tem uma única resposta programada. e ela é sincera.</small>
+      </div>
+
+      <p style="margin-top:18px;font-size:14px;background:#ffffcc;border:2px dashed #f00;padding:10px">
+        <b>💛 Nota do desenvolvedor:</b> o motivo de você achar que nunca tá bom é o mesmo motivo
+        de ficar bom. Quem faz coisa ruim não fica em dúvida. Você fica.
+      </p>
+    </div>
+  </section>
+
   <!-- ============ DEPOIMENTOS ============ -->
   <section class="janela">
     <div class="barra"><span>💬 Livro_de_Visitas.php</span><span class="btns"><i>_</i><i>▢</i><i>x</i></span></div>
@@ -278,6 +324,10 @@ footer{text-align:center;font-size:12px;color:#fff;margin-top:34px;line-height:1
       <details>
         <summary>E se eu não quiser dar meu número?</summary>
         <p>Totalmente justo, e sem climão nenhum. O botão vermelho ali embaixo é pra isso — ele foge um pouco, porque eu sou dramático, mas depois ele para e funciona de verdade. Palavra.</p>
+      </details>
+      <details>
+        <summary>Por que você montou um departamento pro meu bloqueio criativo?</summary>
+        <p>Porque você falou sobre isso e eu prestei atenção. É basicamente todo o meu diferencial competitivo — não tenho verba, não tenho tráfego pago, só presto atenção.</p>
       </details>
       <details>
         <summary>A gente nem se conhece, né?</summary>
@@ -344,6 +394,7 @@ footer{text-align:center;font-size:12px;color:#fff;margin-top:34px;line-height:1
     <span class="big">💚📲💚</span>
     <p><b>Número recebido com sucesso.</b></p>
     <p id="msgSucesso">Meu celular acabou de vibrar e eu acabei de fingir que estava ocupado.</p>
+    <p style="font-size:14px;color:#cfc">E fica o combinado: da próxima vez que você achar que um conteúdo seu não tá bom, você me manda antes de deletar. 🫱</p>
     <p style="font-size:13px;color:#8f8">Previsão de entrega da primeira mensagem: entre 4 minutos e 4 horas, dependendo de quanto tempo eu levar pra reescrever ela.</p>
     <p style="margin-top:18px;font-size:12px;color:#6c6">você pode fechar essa aba agora. ou não. o site fica lisonjeado se você ficar.</p>
   </section>
@@ -396,24 +447,24 @@ footer{text-align:center;font-size:12px;color:#fff;margin-top:34px;line-height:1
    CONFIGURAÇÃO — edite só esta parte
    ====================================================================== */
 const CONFIG = {
-  meuNome: "Levi",               // seu nome
-  nomeDela: "você",              // nome dela (aparece no título e no topo)
-  defeitos: "Fala demais entre as séries e quando fica nervoso",
+  meuNome: "Levi",
+  nomeDela: "Yasmin",
+  defeitos: "Teimoso quando acho que tô certo. E falo demais quando fico animado.",
   qualidades: [
-    { nome:"Conversa",              nivel:94,  selo:"94%",  nota:"não mando 'oi' e sumo. sumir é justamente o que eu não sei fazer." },
-    { nome:"Companhia de viagem",   nivel:96,  selo:"96%",  nota:"mala pronta em 12 minutos. topo praia, trilha e rodoviária." },
-    { nome:"Parceiro de treino",    nivel:82,  selo:"82%",  nota:"seguro a garrafa, conto as repetições e minto sobre quantas faltam." },
-    { nome:"Responde mensagem",     nivel:100, selo:"100%", nota:"na hora. às vezes antes de você mandar. tô trabalhando nisso." },
-    { nome:"Faz rir",               nivel:88,  selo:"88%",  nota:"você já riu uma vez nesse site. tá documentado." },
-    { nome:"Dia de perna",          nivel:41,  selo:"41%",  nota:"eu vou. eu reclamo o caminho inteiro. mas eu vou." },
-    { nome:"Ciúme",                 nivel:7,   selo:"7%",   nota:"o mínimo pra provar que eu tô vivo." },
-    { nome:"Vergonha na cara",      nivel:3,   selo:"3%",   nota:"vide: este site inteiro." }
+    { nome:"Massagem nas costas",  nivel:97,  selo:"97%",  nota:"especialidade: costas depois do dia de perna. sem cobrar e sem pressa." },
+    { nome:"Carinhoso",            nivel:100, selo:"100%", nota:"não é fase de começo. é configuração de fábrica." },
+    { nome:"Ouve de verdade",      nivel:95,  selo:"95%",  nota:"guardo o celular, presto atenção e lembro do que você falou semana passada." },
+    { nome:"Leal",                 nivel:100, selo:"100%", nota:"devia ser o mínimo. ando achando que virou raridade." },
+    { nome:"Responde mensagem",    nivel:100, selo:"100%", nota:"na hora. sem esperar 3 horas de propósito pra parecer ocupado." },
+    { nome:"Companhia de viagem",  nivel:96,  selo:"96%",  nota:"mala pronta em 12 minutos. topo praia, trilha e rodoviária." },
+    { nome:"Parceiro de treino",   nivel:88,  selo:"88%",  nota:"seguro a garrafa, conto as repetições e te empurro na última." },
+    { nome:"Faz rir",              nivel:90,  selo:"90%",  nota:"você já riu uma vez nesse site. tá documentado." }
   ],
   depoimentos: [
     { estrelas:5, texto:"Melhor filho que eu já tive. E eu tive mais de um.", quem:"— Minha mãe, cliente desde o início" },
     { estrelas:5, texto:"Me ajudou a mudar de apartamento num SÁBADO DE MANHÃ. Sábado. De manhã.", quem:"— Melhor amigo, testemunha ocular" },
     { estrelas:5, texto:"AU AU AU AU (tradução: ele me dá petisco escondido)", quem:"— Cachorro, perfil verificado ✔" },
-    { estrelas:4, texto:"Puxa carga certinho. Só fala demais entre as séries.", quem:"— Rapaz do supino ao lado" },
+    { estrelas:5, texto:"Fez massagem na minha mãe no almoço de domingo. A mulher falou disso a semana inteira.", quem:"— Prima, relato espontâneo" },
     { estrelas:5, texto:"Paga a conta dividida na hora, sem 'depois eu te mando'. Raríssimo.", quem:"— Grupo do churrasco" },
     { estrelas:1, texto:"Me bloqueou sem motivo nenhum.", quem:"— Perfil que vendia curso de cripto" }
   ],
@@ -450,6 +501,74 @@ const io = new IntersectionObserver(es => es.forEach(e => {
   if (e.isIntersecting) { e.target.style.width = e.target.dataset.nivel + '%'; io.unobserve(e.target); }
 }), { threshold:.4 });
 document.querySelectorAll('.barrinha i').forEach(el => io.observe(el));
+
+/* ======================================================================
+   DEPTO. DE DESBLOQUEIO CRIATIVO
+   ====================================================================== */
+const IDEIAS = [
+  "Posta aquele rascunho que você achou ruim há uns meses. Ele tá melhor do que você lembra.",
+  "Carrossel: 3 erros que você já cometeu com cliente. Vulnerabilidade engaja mais que dica pronta.",
+  "Reels do seu treino com legenda sobre consistência em marketing. Dois nichos, um vídeo, zero esforço extra.",
+  "Bastidor do bloqueio criativo. O bloqueio É o conteúdo — você tá sentada em cima de um post.",
+  "Antes e depois de um perfil que você arrumou. Prova social sem precisar se elogiar.",
+  "Enquete no story: 'esse criativo tá bom ou tá horrível?'. Spoiler: tá bom.",
+  "Pergunta pro seu público de qual conteúdo TEU eles lembram. A resposta vai te assustar.",
+  "'O que eu faria diferente se começasse hoje'. Salvamento garantido.",
+  "Posta o post mediano de propósito. O algoritmo não liga tanto quanto você.",
+  "Story mostrando quantas vezes você reescreveu uma legenda. Todo mundo faz, ninguém mostra.",
+  "Carrossel só com prints de pedidos absurdos de cliente. Comédia pronta, roteiro zero.",
+  "Escreve 10 ideias ruins de propósito. A número 7 sempre presta. É lei.",
+  "Grava sem roteiro você respondendo por que entrou em social media. Primeira take, sem regravar.",
+  "Aquele conteúdo que você não postou por medo? Esse. É esse. Sempre foi esse.",
+  "Regra nova: publica antes da quarta releitura. A quarta nunca melhorou nada na história.",
+  "Reels de você encarando o nada com música triste. Legenda: 'briefing chegou sexta, 18h'.",
+  "Mostra sua pasta de rascunhos não publicados. O número já é o gancho.",
+  "Posta o conteúdo que deu errado e o que você aprendeu. Ninguém tem coragem e por isso funciona."
+];
+const VEREDITOS = [
+  "SIM. Posta.",
+  "Tá bom. Você já revisou 4 vezes e a quarta não mudou nada.",
+  "Tá ótimo. Você só enjoou porque viu 40 vezes. Ninguém mais viu nenhuma.",
+  "Tá bom sim. 'Bom' e 'perfeito' são coisas diferentes e só uma delas dá pra postar.",
+  "Tá bom. Aquele detalhe que te incomoda ninguém vai notar. Sério.",
+  "SIM. E antes que você pergunte de novo: sim.",
+  "Tá bom. Posta e vai treinar — rende mais que reabrir o arquivo.",
+  "Tá bom. Seu pior conteúdo é o conteúdo médio de muita gente.",
+  "Tá bom. A prova é você estar em dúvida: quem faz coisa ruim não duvida.",
+  "SIM. Consulta encerrada. Próximo."
+];
+
+// sorteio sem repetir até esgotar a lista
+function sorteador(lista){
+  let saco = [];
+  return () => {
+    if (!saco.length) saco = lista.map((_, i) => i).sort(() => Math.random() - .5);
+    return lista[saco.pop()];
+  };
+}
+const proximaIdeia = sorteador(IDEIAS);
+const proximoVeredito = sorteador(VEREDITOS);
+
+let totalIdeias = 0;
+document.getElementById('btnIdeia').addEventListener('click', () => {
+  totalIdeias++;
+  document.getElementById('contIdeias').textContent = totalIdeias;
+  datilografar(document.getElementById('visorIdeia'), '> ' + proximaIdeia());
+});
+document.getElementById('btnBom').addEventListener('click', () => {
+  datilografar(document.getElementById('visorBom'), '> ' + proximoVeredito());
+});
+
+// efeito de máquina de escrever
+function datilografar(el, texto){
+  clearInterval(el._timer);
+  el.textContent = '';
+  let i = 0;
+  el._timer = setInterval(() => {
+    el.textContent = texto.slice(0, ++i);
+    if (i >= texto.length) clearInterval(el._timer);
+  }, 14);
+}
 
 /* ======================================================================
    CONTADOR DE VISITAS (falso, como manda a tradição)
