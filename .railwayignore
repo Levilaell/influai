@@ -9,3 +9,5 @@ prototype
 *.log
 scripts/_*.mjs
 .vercel
+meme-site
+MEME-SITE.md
