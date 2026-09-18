@@ -48,13 +48,13 @@ body::before{
 
 /* ===================== MARQUEE ===================== */
 .marquee{overflow:hidden;white-space:nowrap;background:#000;border-top:3px solid var(--verde);border-bottom:3px solid var(--verde);padding:6px 0;font-weight:bold;color:var(--verde);font-size:15px}
-.marquee span{display:inline-block;animation:rola 14s linear infinite}
+.marquee span{display:inline-block;animation:rola 14s linear infinite;animation-delay:-4s}
 
 /* ===================== HERO ===================== */
 header{text-align:center;padding:26px 0 10px}
 .aviso{display:inline-block;background:var(--amarelo);color:#000;font-weight:bold;padding:4px 12px;border:3px dashed #f00;transform:rotate(-3deg);font-size:14px;margin-bottom:14px}
 h1{
-  font-size:clamp(28px,8vw,56px); line-height:1.05; letter-spacing:-1px;
+  font-size:clamp(28px,8vw,56px); line-height:1.22; letter-spacing:-1px;
   color:var(--amarelo);
   text-shadow:3px 3px 0 #f0f, 6px 6px 0 #00f0ff, 9px 9px 0 rgba(0,0,0,.5);
   animation:chacoalha .5s ease-in-out infinite;
@@ -107,7 +107,7 @@ details p{padding:10px;border-top:1px dashed #808080}
 
 /* ===================== FORM CTA ===================== */
 #cta{border:6px double var(--amarelo);background:linear-gradient(#1a0030,#3d0066);padding:22px 16px;text-align:center;margin:30px 0;box-shadow:0 0 30px rgba(255,45,149,.6)}
-#cta h2{color:var(--amarelo);text-shadow:2px 2px 0 #f0f}
+#cta h2{color:var(--amarelo);text-shadow:2px 2px 0 #000,0 0 14px rgba(255,45,149,.9)}
 #cta p.pitch{font-size:15px;margin-bottom:16px;line-height:1.5}
 .campo{max-width:360px;margin:0 auto 12px}
 .campo label{display:block;font-size:13px;text-align:left;margin-bottom:4px;color:var(--ciano);font-weight:bold}
@@ -127,6 +127,11 @@ details p{padding:10px;border-top:1px dashed #808080}
 #sucesso h2{color:var(--verde);text-shadow:2px 2px 0 #000;font-size:clamp(22px,6vw,34px)}
 #sucesso .big{font-size:60px;display:block;margin:10px 0;animation:pula 1s infinite}
 #sucesso p{font-size:15px;line-height:1.6;margin-top:10px}
+
+#semClima{display:none;text-align:center;border:4px solid #888;background:#15151f;padding:30px 18px;margin:30px 0}
+#semClima.on{display:block}
+#semClima h2{color:#ddd;text-shadow:2px 2px 0 #000}
+#semClima p{font-size:15px;line-height:1.6;margin-top:10px}
 
 /* ===================== POPUP ===================== */
 #popup{position:fixed;inset:0;background:rgba(0,0,0,.7);display:none;align-items:center;justify-content:center;z-index:50;padding:16px}
@@ -159,7 +164,7 @@ footer{text-align:center;font-size:12px;color:#fff;margin-top:34px;line-height:1
       <b class="arcoiris" style="color:#ffe600">UM (1) PRETENDENTE SEMINOVO, ÚNICO DONO</b>
       <span class="pula">👈</span>
     </p>
-    <p class="sub" style="font-size:13px;margin-top:10px">para resgatar seu prêmio, role a página até o final 📜</p>
+    <p class="sub" style="font-size:13px;margin-top:10px">a gente não se conhece. eu sei. é exatamente por isso que esse site existe 📜</p>
   </header>
 
   <!-- ============ QUEM É ESSE RAPAZ ============ -->
@@ -182,15 +187,50 @@ footer{text-align:center;font-size:12px;color:#fff;margin-top:34px;line-height:1
             <tr><th>Estado de conservação</th><td>Seminovo, poucas marcas de uso</td></tr>
             <tr><th>Garantia</th><td>Vitalícia ⭐</td></tr>
             <tr><th>Defeitos conhecidos</th><td id="fichaDefeitos">Fala demais quando fica nervoso</td></tr>
-            <tr><th>Consumo</th><td>Baixo. Aceito pizza como forma de pagamento</td></tr>
+            <tr><th>Consumo</th><td>Baixo. Aceito açaí pós-treino como forma de pagamento</td></tr>
+            <tr><th>Disponibilidade</th><td>Academia, viagem de última hora e conversa às 23h47</td></tr>
             <tr><th>Interesse atual</th><td>Conversar contigo sem parecer desesperado (falhei)</td></tr>
           </table>
         </div>
       </div>
       <p style="margin-top:16px;font-size:14px;background:#ffffcc;border:2px dashed #f00;padding:10px">
-        <b>💡 Resumo executivo:</b> eu tentei puxar assunto no Instagram e você respondeu com
-        <b>"kk"</b>. Interpretei isso como <i>"me conte mais"</i>. Então construí um site inteiro.
-        Chamo isso de <b>iniciativa</b>. Meu terapeuta chama de outra coisa.
+        <b>💡 Resumo executivo:</b> a gente não se conhece. Eu tentei puxar assunto no Instagram,
+        a conversa não engatou, e tá tudo bem. Só que em vez de mandar <b>"oi"</b> pela terceira vez,
+        eu preferi construir um site inteiro. Chamo isso de <b>iniciativa</b>.
+        Meu terapeuta chama de outra coisa.
+      </p>
+    </div>
+  </section>
+
+
+  <!-- ============ BRIEFING ============ -->
+  <section class="janela">
+    <div class="barra"><span>📈 briefing_campanha_ME_RESPONDE_v7_FINAL.pdf</span><span class="btns"><i>_</i><i>▢</i><i>x</i></span></div>
+    <div class="corpo">
+      <h2>📋 Briefing da campanha</h2>
+      <p style="font-size:14px;margin-bottom:14px;color:#333">
+        Descobri que você trabalha com social media. Então resolvi falar a sua língua
+        e mandar um briefing decente. Ou pelo menos um briefing.
+      </p>
+      <table>
+        <tr><th>Cliente</th><td>Um rapaz. Pessoa física. Sem verba.</td></tr>
+        <tr><th>Objetivo</th><td>1 (uma) conversa que não morra no visualizado</td></tr>
+        <tr><th>Público-alvo</th><td>Extremamente segmentado. Amostra: 1 pessoa. Você.</td></tr>
+        <tr><th>Budget de mídia</th><td>R$ 0,00 — só orgânico, nada de tráfego pago</td></tr>
+        <tr><th>KPI atual</th><td>Taxa de resposta: <b style="color:#c00">0%</b></td></tr>
+        <tr><th>Meta</th><td>Taxa de resposta: 1%. Sou realista.</td></tr>
+        <tr><th>Prazo</th><td>Ontem (clássico)</td></tr>
+        <tr><th>Entregáveis</th><td>
+          • papo decente, sem áudio de 7 minutos<br>
+          • parceiro de academia (seguro a garrafa e minto sobre quantas faltam)<br>
+          • companhia de viagem com mala pronta em 12 minutos<br>
+          • meme diário, entrega garantida
+        </td></tr>
+        <tr><th>Observação</th><td>Sim, eu vi seu perfil. Não, não cheguei em 2019. Tenho autocontrole.</td></tr>
+      </table>
+      <p style="margin-top:16px;font-size:14px;background:#ffffcc;border:2px dashed #f00;padding:10px">
+        ⚠️ <b>Ciente:</b> esse é o pior briefing que você vai receber esse mês.
+        Mas é o único que já veio com o site pronto.
       </p>
     </div>
   </section>
@@ -237,7 +277,19 @@ footer{text-align:center;font-size:12px;color:#fff;margin-top:34px;line-height:1
       </details>
       <details>
         <summary>E se eu não quiser dar meu número?</summary>
-        <p>Totalmente justo. Aí o botão vermelho ali embaixo é pra você. Boa sorte clicando nele. 🙂</p>
+        <p>Totalmente justo, e sem climão nenhum. O botão vermelho ali embaixo é pra isso — ele foge um pouco, porque eu sou dramático, mas depois ele para e funciona de verdade. Palavra.</p>
+      </details>
+      <details>
+        <summary>A gente nem se conhece, né?</summary>
+        <p>Exato. É esse o bug que eu tô tentando corrigir. Você é especialista em alcançar milhares de pessoas; eu sou o cara que construiu um site inteiro pra alcançar uma. Cada um com sua estratégia.</p>
+      </details>
+      <details>
+        <summary>Você vai me chamar pra academia?</summary>
+        <p>Vou. Mas já aviso: eu sou aquele que trata "só mais uma série" como unidade de tempo, e dia de perna eu vou reclamando o caminho inteiro. Eu vou, mas vou reclamando.</p>
+      </details>
+      <details>
+        <summary>E viagem?</summary>
+        <p>Mala pronta em 12 minutos, topo praia, trilha e rodoviária. Sou do tipo que acorda cedo no último dia pra não desperdiçar a viagem — se você é do tipo que quer dormir, a gente negocia.</p>
       </details>
       <details>
         <summary>Você vai me mandar bom dia todo dia?</summary>
@@ -296,6 +348,15 @@ footer{text-align:center;font-size:12px;color:#fff;margin-top:34px;line-height:1
     <p style="margin-top:18px;font-size:12px;color:#6c6">você pode fechar essa aba agora. ou não. o site fica lisonjeado se você ficar.</p>
   </section>
 
+  <!-- ============ SEM CLIMÃO ============ -->
+  <section id="semClima">
+    <h2>🫡 Tudo certo</h2>
+    <p><b>Sério, sem climão nenhum.</b></p>
+    <p>Era pra ser uma piada e a piada já valeu. Você não deve nada a ninguém por não responder um site.</p>
+    <p style="font-size:13px;color:#bbb;margin-top:14px">Bom treino, boa viagem e sucesso nos clientes. 💪✈️</p>
+    <p style="font-size:12px;color:#888;margin-top:14px">(se um dia mudar de ideia, é só recarregar a página. ela vai estar aqui.)</p>
+  </section>
+
   <!-- ============ RODAPÉ ============ -->
   <footer>
     <div class="gif">🌟 💌 🌟 💌 🌟 💌 🌟</div>
@@ -335,26 +396,26 @@ footer{text-align:center;font-size:12px;color:#fff;margin-top:34px;line-height:1
    CONFIGURAÇÃO — edite só esta parte
    ====================================================================== */
 const CONFIG = {
-  meuNome: "eu",                 // seu nome
-  nomeDela: "você",              // nome dela
-  defeitos: "Fala demais quando fica nervoso",
+  meuNome: "Levi",               // seu nome
+  nomeDela: "você",              // nome dela (aparece no título e no topo)
+  defeitos: "Fala demais entre as séries e quando fica nervoso",
   qualidades: [
-    { nome:"Conversa boa",        nivel:98,  selo:"98%",  nota:"nunca deixei um papo morrer em 'kk'. até hoje." },
-    { nome:"Lealdade",           nivel:100, selo:"147%", nota:"nível cachorro. mas sem lamber o sofá." },
-    { nome:"Faz rir",            nivel:91,  selo:"91%",  nota:"você já riu uma vez nesse site. tá provado." },
-    { nome:"Cozinha",            nivel:74,  selo:"74%",  nota:"faço 3 pratos muito bem e 40 pratos muito mal." },
-    { nome:"Playlist",           nivel:88,  selo:"88%",  nota:"zero skip. testado em laboratório (meu carro)." },
-    { nome:"Responde mensagem",  nivel:100, selo:"100%", nota:"na hora. às vezes antes de você mandar." },
-    { nome:"Ciúme",              nivel:8,   selo:"8%",   nota:"o mínimo pra provar que tô vivo." },
-    { nome:"Vergonha na cara",   nivel:4,   selo:"4%",   nota:"vide: este site." }
+    { nome:"Conversa",              nivel:94,  selo:"94%",  nota:"não mando 'oi' e sumo. sumir é justamente o que eu não sei fazer." },
+    { nome:"Companhia de viagem",   nivel:96,  selo:"96%",  nota:"mala pronta em 12 minutos. topo praia, trilha e rodoviária." },
+    { nome:"Parceiro de treino",    nivel:82,  selo:"82%",  nota:"seguro a garrafa, conto as repetições e minto sobre quantas faltam." },
+    { nome:"Responde mensagem",     nivel:100, selo:"100%", nota:"na hora. às vezes antes de você mandar. tô trabalhando nisso." },
+    { nome:"Faz rir",               nivel:88,  selo:"88%",  nota:"você já riu uma vez nesse site. tá documentado." },
+    { nome:"Dia de perna",          nivel:41,  selo:"41%",  nota:"eu vou. eu reclamo o caminho inteiro. mas eu vou." },
+    { nome:"Ciúme",                 nivel:7,   selo:"7%",   nota:"o mínimo pra provar que eu tô vivo." },
+    { nome:"Vergonha na cara",      nivel:3,   selo:"3%",   nota:"vide: este site inteiro." }
   ],
   depoimentos: [
-    { estrelas:5, texto:"Melhor filho que eu já tive. E eu tive três.", quem:"— Minha mãe, cliente desde 1997" },
-    { estrelas:5, texto:"Cara gente boa. Me ajudou a mudar de apartamento no sábado de manhã. SÁBADO DE MANHÃ.", quem:"— Melhor amigo, testemunha ocular" },
-    { estrelas:5, texto:"AU AU AU AU AU (tradução: ele me dá petisco escondido)", quem:"— Cachorro, verificado ✔" },
-    { estrelas:4, texto:"Aluno educado, só falava demais no fundo da sala.", quem:"— Professora do 8º ano" },
-    { estrelas:5, texto:"Paga a conta dividida na hora, sem 'depois eu te mando'. Raro.", quem:"— Grupo do churrasco" },
-    { estrelas:1, texto:"Me bloqueou sem motivo.", quem:"— Aquele perfil que vendia curso de cripto" }
+    { estrelas:5, texto:"Melhor filho que eu já tive. E eu tive mais de um.", quem:"— Minha mãe, cliente desde o início" },
+    { estrelas:5, texto:"Me ajudou a mudar de apartamento num SÁBADO DE MANHÃ. Sábado. De manhã.", quem:"— Melhor amigo, testemunha ocular" },
+    { estrelas:5, texto:"AU AU AU AU (tradução: ele me dá petisco escondido)", quem:"— Cachorro, perfil verificado ✔" },
+    { estrelas:4, texto:"Puxa carga certinho. Só fala demais entre as séries.", quem:"— Rapaz do supino ao lado" },
+    { estrelas:5, texto:"Paga a conta dividida na hora, sem 'depois eu te mando'. Raríssimo.", quem:"— Grupo do churrasco" },
+    { estrelas:1, texto:"Me bloqueou sem motivo nenhum.", quem:"— Perfil que vendia curso de cripto" }
   ],
   // deixe "" para o site funcionar sem backend (só mostra a tela de sucesso)
   endpoint: "/api/zap"
@@ -403,7 +464,14 @@ document.querySelectorAll('.barrinha i').forEach(el => io.observe(el));
    POPUP
    ====================================================================== */
 const popup = document.getElementById('popup');
-setTimeout(() => popup.classList.add('on'), 3500);
+let popupCancelado = false;
+document.getElementById('whatsapp').addEventListener('focus', () => { popupCancelado = true; }, { once:true });
+document.getElementById('recado').addEventListener('focus', () => { popupCancelado = true; }, { once:true });
+setTimeout(() => {
+  const ctaVisivel = document.getElementById('cta').getBoundingClientRect().top < window.innerHeight;
+  if (!popupCancelado && !ctaVisivel) popup.classList.add('on');
+}, 3200);
+document.addEventListener('keydown', e => { if (e.key === 'Escape') popup.classList.remove('on'); });
 popup.addEventListener('click', e => { if (e.target === popup) popup.classList.remove('on'); });
 document.getElementById('fecharPopup').addEventListener('click', () => {
   popup.classList.remove('on');
@@ -414,22 +482,42 @@ document.getElementById('fecharPopup').addEventListener('click', () => {
    BOTÃO "NÃO QUERO" QUE FOGE
    ====================================================================== */
 const btnNao = document.getElementById('btnNao');
-const desculpas = [
-  "❌ não quero","🤨 tem certeza?","😬 pensa bem","😅 ops, errei","🙃 tenta de novo",
-  "😳 quase!","🥺 poxa","🫠 já era","🤡 você clicou em mim?","😐 tá difícil né"
-];
+const desculpas = ["🤨 tem certeza?","😬 pensa bem","😅 ops, errei","🙃 quase","😐 tá, tá"];
 let fugas = 0;
+
 function fugir(){
+  if (fugas >= desculpas.length) return render();
+  const dx = (Math.random()*2 - 1) * (30 + fugas*22);
+  const dy = (Math.random()*2 - 1) * 24;
+  btnNao.style.transform = `translate(${dx}px, ${dy}px) rotate(${(Math.random()*2-1)*14}deg)`;
+  btnNao.textContent = desculpas[fugas];
   fugas++;
-  const dx = (Math.random()*2 - 1) * Math.min(120, 30 + fugas*12);
-  const dy = (Math.random()*2 - 1) * 26;
-  btnNao.style.transform = `translate(${dx}px, ${dy}px) rotate(${(Math.random()*2-1)*18}deg) scale(${Math.max(.45, 1 - fugas*0.06)})`;
-  btnNao.textContent = desculpas[Math.min(fugas, desculpas.length - 1)];
-  if (fugas >= 8) { btnNao.style.opacity = '0'; btnNao.disabled = true; setTimeout(() => btnNao.remove(), 400); }
 }
+
+// depois de fugir 5 vezes, o botão para de brincar e funciona de verdade
+function render(){
+  btnNao.style.transform = 'none';
+  btnNao.textContent = '❌ de boa, não rolou';
+  btnNao.onmouseenter = null;
+  btnNao.onclick = semClima;
+  btnNao.ontouchstart = null;
+  btnNao.removeEventListener('mouseenter', fugir);
+  btnNao.removeEventListener('click', cliqueNao);
+  btnNao.removeEventListener('touchstart', toqueNao);
+}
+
+function semClima(){
+  document.getElementById('cta').style.display = 'none';
+  const s = document.getElementById('semClima');
+  s.classList.add('on');
+  s.scrollIntoView({ behavior:'smooth', block:'center' });
+}
+
+function cliqueNao(e){ e.preventDefault(); fugir(); }
+function toqueNao(e){ e.preventDefault(); fugir(); }
 btnNao.addEventListener('mouseenter', fugir);
-btnNao.addEventListener('click', e => { e.preventDefault(); fugir(); });
-btnNao.addEventListener('touchstart', e => { e.preventDefault(); fugir(); }, { passive:false });
+btnNao.addEventListener('click', cliqueNao);
+btnNao.addEventListener('touchstart', toqueNao, { passive:false });
 
 /* ======================================================================
    MÁSCARA DE TELEFONE

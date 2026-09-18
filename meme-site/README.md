@@ -15,8 +15,9 @@ meme-site/
 
 ## 1. Colocar a foto
 
-Salve sua foto como `meme-site/foto.jpg`. Se o arquivo não existir, o site mostra
-um placeholder listrado no lugar (não quebra).
+A foto já está em `meme-site/foto.jpg` (recortada do original: removidos o sticker do
+@, a flor e a UI do Instagram). Pra trocar, é só substituir o arquivo. Se ele não
+existir, o site mostra um placeholder listrado no lugar — não quebra.
 
 Formato ideal: retrato, ~600×800px, até 300 KB.
 
@@ -29,8 +30,8 @@ Tudo que muda está no objeto `CONFIG`, no fim do `index.html`:
 
 ```js
 const CONFIG = {
-  meuNome: "...",     // seu nome
-  nomeDela: "...",    // nome dela (aparece no título e no hero)
+  meuNome: "Levi",    // seu nome
+  nomeDela: "você",   // nome dela (aparece no título e no hero)
   defeitos: "...",
   qualidades: [ { nome, nivel, selo, nota }, ... ],
   depoimentos: [ { estrelas, texto, quem }, ... ],
