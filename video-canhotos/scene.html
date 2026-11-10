@@ -1,0 +1,476 @@
+<!doctype html>
+<html lang="pt-BR">
+<head>
+<meta charset="utf-8">
+<title>Canhotos – vídeo</title>
+<style>
+  :root{
+    --bg:#070d1a; --bg2:#0c1730; --ink:#f4f7fb; --mute:#8a98b3; --line:#1d2a47;
+    --green:#22c55e; --green2:#16a34a; --red:#ef4444; --amber:#f59e0b; --blue:#3b82f6;
+    --paper:#fbf8f1; --paperInk:#1f2937;
+  }
+  *{box-sizing:border-box;margin:0;padding:0}
+  html,body{width:1080px;height:1920px;overflow:hidden;background:var(--bg);font-family:Inter,system-ui,sans-serif;color:var(--ink)}
+  #stage{position:absolute;inset:0;overflow:hidden}
+  .abs{position:absolute}
+  .scene{position:absolute;inset:0;opacity:0}
+  /* fundo */
+  #bg{position:absolute;inset:0;background:radial-gradient(1200px 900px at 50% 30%,var(--bg2),var(--bg) 70%)}
+  #grid{position:absolute;inset:-200px;background-image:linear-gradient(var(--line) 1px,transparent 1px),linear-gradient(90deg,var(--line) 1px,transparent 1px);background-size:90px 90px;opacity:.35;mask-image:radial-gradient(closest-side,#000 40%,transparent)}
+  #glow{position:absolute;width:1200px;height:1200px;border-radius:50%;filter:blur(120px);opacity:.35;left:-60px;top:200px;background:var(--red)}
+  #flash{position:absolute;inset:0;background:#fff;opacity:0;pointer-events:none}
+  /* rótulo topo */
+  #tag{position:absolute;top:150px;left:0;right:0;text-align:center}
+  #tag span{display:inline-block;padding:14px 30px;border-radius:999px;font-weight:700;letter-spacing:.18em;font-size:30px;border:2px solid currentColor}
+  /* legendas */
+  #cap{position:absolute;left:70px;right:70px;top:1330px;height:280px;display:flex;align-items:center;justify-content:center;text-align:center}
+  #cap p{font-size:58px;line-height:1.22;font-weight:800;letter-spacing:-.01em;text-shadow:0 4px 24px rgba(0,0,0,.6)}
+  #cap .w{display:inline-block;margin:0 .17em;transition:none}
+  /* canhoto de papel */
+  .canhoto{width:820px;height:300px;background:var(--paper);color:var(--paperInk);border-radius:6px;box-shadow:0 30px 60px rgba(0,0,0,.45);padding:22px 26px;font-family:'DejaVu Sans',Inter,sans-serif;overflow:hidden}
+  .canhoto .t{font-size:15px;font-weight:700;letter-spacing:.02em;line-height:1.25;border-bottom:2px solid #333;padding-bottom:10px;width:600px}
+  .canhoto .row{display:flex;margin-top:14px;gap:14px}
+  .canhoto .box{border:2px solid #333;border-radius:3px;padding:6px 10px;font-size:12px;font-weight:700;height:118px;position:relative}
+  .canhoto .nf{position:absolute;right:22px;top:22px;width:170px;height:256px;border-left:2px dashed #333;padding-left:16px;text-align:center;font-weight:800}
+  .canhoto .nf b{display:block;font-size:30px;margin-top:6px}
+  .canhoto .nf small{display:block;font-size:14px;margin-top:10px;line-height:1.5}
+  .hand{font-family:'URW Chancery L','Z003','DejaVu Serif',serif;font-style:italic;font-weight:400;font-size:34px;color:#1e3a8a;position:absolute;left:14px;bottom:10px}
+  .sig{position:absolute;left:20px;bottom:6px;width:230px;height:70px}
+  .perf{position:absolute;left:0;right:0;bottom:0;height:10px;background:repeating-linear-gradient(90deg,transparent 0 14px,var(--bg) 14px 22px)}
+  /* cartões ui */
+  .card{background:#0f1a33;border:2px solid #22345c;border-radius:28px;box-shadow:0 30px 80px rgba(0,0,0,.45)}
+  .pill{display:inline-flex;align-items:center;gap:14px;padding:16px 26px;border-radius:999px;font-weight:700;font-size:34px}
+  .big{font-weight:900;letter-spacing:-.03em;line-height:1.02}
+  .mono{font-family:'JetBrains Mono',monospace}
+  /* telefone */
+  .phone{width:560px;height:1040px;border-radius:70px;background:#000;border:14px solid #1b2235;box-shadow:0 40px 120px rgba(0,0,0,.6),inset 0 0 0 2px #2b3552;overflow:hidden}
+  .phone .bar{height:150px;background:#0b3d33;display:flex;align-items:flex-end;padding:0 28px 22px;gap:18px}
+  .phone .av{width:66px;height:66px;border-radius:50%;background:#1f7a63;display:flex;align-items:center;justify-content:center;font-weight:800;font-size:28px}
+  .phone .chat{position:absolute;top:150px;left:0;right:0;bottom:0;background:#0b141a;background-image:radial-gradient(#13212a 2px,transparent 2px);background-size:34px 34px}
+  .bubble{position:absolute;right:22px;max-width:420px;background:#005c4b;border-radius:22px 6px 22px 22px;padding:12px;color:#e9fff8;font-size:26px}
+  .bubble.in{left:22px;right:auto;background:#202c33;border-radius:6px 22px 22px 22px}
+  .ticks{font-size:22px;color:#53bdeb;text-align:right;margin-top:4px}
+  table{border-collapse:collapse;width:100%}
+  td,th{padding:20px 22px;font-size:28px;text-align:left;border-bottom:1px solid #22345c}
+  th{color:var(--mute);font-size:22px;letter-spacing:.12em;font-weight:700}
+  .status{display:inline-block;padding:8px 18px;border-radius:999px;font-weight:800;font-size:24px}
+</style>
+</head>
+<body>
+<div id="stage">
+  <div id="bg"></div><div id="grid"></div><div id="glow"></div>
+
+  <!-- ============ HOOK: pilha de canhotos ============ -->
+  <div class="scene" id="s_hook">
+    <div id="pile"></div>
+    <div class="abs big" id="hookBig" style="left:0;right:0;top:300px;text-align:center;font-size:128px">
+      <div id="hk1">CADÊ O</div><div id="hk2" style="color:var(--red)">CANHOTO?</div>
+    </div>
+  </div>
+
+  <!-- ============ PAIN1: amassado / some ============ -->
+  <div class="scene" id="s_pain1">
+    <div class="abs" id="p1wrap" style="left:130px;top:700px;width:820px;height:300px">
+      <div class="canhoto abs" id="p1c" style="left:0;top:0"></div>
+      <div class="abs" id="p1stamp" style="left:150px;top:90px;transform:rotate(-12deg);border:8px solid var(--red);color:var(--red);font-weight:900;font-size:86px;padding:4px 28px;border-radius:14px;letter-spacing:.06em;opacity:0">ILEGÍVEL</div>
+    </div>
+    <div class="abs" id="p1ghost" style="left:130px;top:700px;width:820px;height:300px;border:5px dashed #4b5b7d;border-radius:10px;display:flex;align-items:center;justify-content:center;font-size:200px;font-weight:900;color:#4b5b7d;opacity:0">?</div>
+    <div class="abs" style="left:0;right:0;top:1060px;text-align:center" id="p1truck"></div>
+  </div>
+
+  <!-- ============ PAIN2: digitação manual ============ -->
+  <div class="scene" id="s_pain2">
+    <div class="card abs" style="left:90px;top:420px;width:900px;height:760px;overflow:hidden" id="p2sheet">
+      <div style="height:70px;background:#13244a;display:flex;align-items:center;padding:0 28px;gap:12px">
+        <i style="width:18px;height:18px;border-radius:50%;background:#ef4444"></i><i style="width:18px;height:18px;border-radius:50%;background:#f59e0b"></i><i style="width:18px;height:18px;border-radius:50%;background:#22c55e"></i>
+        <span style="margin-left:18px;color:var(--mute);font-size:24px" class="mono">controle_canhotos_FINAL_v7.xlsx</span>
+      </div>
+      <table class="mono" id="p2tab"><thead><tr><th>NF</th><th>DATA</th><th>RECEBEDOR</th><th>OK?</th></tr></thead><tbody></tbody></table>
+    </div>
+    <div class="abs" id="clock" style="left:760px;top:300px;width:220px;height:220px;border-radius:50%;background:#0f1a33;border:8px solid var(--amber);box-shadow:0 20px 60px rgba(0,0,0,.5)">
+      <div class="abs" id="hHand" style="left:102px;top:50px;width:16px;height:62px;background:var(--amber);border-radius:8px;transform-origin:8px 60px"></div>
+      <div class="abs" id="mHand" style="left:104px;top:22px;width:12px;height:90px;background:#fff;border-radius:6px;transform-origin:6px 88px"></div>
+      <div class="abs" style="left:96px;top:96px;width:28px;height:28px;border-radius:50%;background:#fff"></div>
+    </div>
+  </div>
+
+  <!-- ============ PAIN3: cliente contesta / não acha ============ -->
+  <div class="scene" id="s_pain3">
+    <div class="abs card" id="p3msg" style="left:90px;top:380px;width:760px;padding:30px 34px">
+      <div style="color:var(--mute);font-size:24px;font-weight:700;letter-spacing:.1em">CLIENTE · AGORA</div>
+      <div style="font-size:42px;font-weight:700;margin-top:12px;line-height:1.25">“Essa entrega não chegou. Não vou pagar.”</div>
+    </div>
+    <div class="abs card" id="p3search" style="left:90px;top:740px;width:900px;padding:34px">
+      <div style="display:flex;align-items:center;gap:22px;background:#0a1328;border:2px solid #2a3d66;border-radius:18px;padding:22px 26px">
+        <svg width="46" height="46" viewBox="0 0 24 24" fill="none" stroke="#8a98b3" stroke-width="2.5"><circle cx="11" cy="11" r="7"/><path d="M20 20l-4-4"/></svg>
+        <span class="mono" style="font-size:40px" id="p3q"></span><span id="p3cur" style="width:4px;height:46px;background:#fff"></span>
+      </div>
+      <div id="p3res" style="margin-top:34px;display:flex;align-items:center;gap:22px;color:var(--red);font-size:40px;font-weight:800;opacity:0">
+        <svg width="60" height="60" viewBox="0 0 24 24" fill="none" stroke="#ef4444" stroke-width="2.5"><circle cx="12" cy="12" r="10"/><path d="M15 9l-6 6M9 9l6 6"/></svg>
+        Comprovante não encontrado
+      </div>
+      <div id="p3folders" style="margin-top:30px;display:flex;gap:18px;opacity:0"></div>
+    </div>
+  </div>
+
+  <!-- ============ PAIN4: consequências ============ -->
+  <div class="scene" id="s_pain4">
+    <div class="abs card" id="p4a" style="left:90px;top:480px;width:900px;height:300px;display:flex;align-items:center;gap:40px;padding:0 60px;border-color:#7f1d1d;background:#1f0d14">
+      <svg width="130" height="130" viewBox="0 0 24 24" fill="none" stroke="#ef4444" stroke-width="2"><rect x="4" y="11" width="16" height="10" rx="2"/><path d="M8 11V7a4 4 0 018 0v4"/></svg>
+      <div><div style="color:#fca5a5;font-size:30px;font-weight:700;letter-spacing:.1em">FATURAMENTO</div><div class="big" style="font-size:96px">TRAVADO</div></div>
+    </div>
+    <div class="abs card" id="p4b" style="left:90px;top:840px;width:900px;height:300px;display:flex;align-items:center;gap:40px;padding:0 60px;border-color:#7f1d1d;background:#1f0d14">
+      <svg width="130" height="130" viewBox="0 0 24 24" fill="none" stroke="#ef4444" stroke-width="2"><rect x="3" y="5" width="18" height="16" rx="2"/><path d="M3 10h18M8 3v4M16 3v4M10 14l4 4M14 14l-4 4"/></svg>
+      <div><div style="color:#fca5a5;font-size:30px;font-weight:700;letter-spacing:.1em">COBRANÇA</div><div class="big" style="font-size:96px">ATRASADA</div></div>
+    </div>
+  </div>
+
+  <!-- ============ TURN: solução ============ -->
+  <div class="scene" id="s_turn">
+    <div class="abs big" id="tBig" style="left:0;right:0;top:380px;text-align:center;font-size:118px">
+      <div>E se o canhoto</div><div style="color:var(--green)">se resolvesse<br>sozinho?</div>
+    </div>
+    <div class="abs" id="flow" style="left:90px;top:900px;width:900px;height:260px">
+      <svg class="abs" width="900" height="260" style="left:0;top:0"><path id="flowPath" d="M150 130 H750" stroke="#22c55e" stroke-width="8" stroke-linecap="round" fill="none" stroke-dasharray="600" stroke-dashoffset="600"/></svg>
+    </div>
+  </div>
+
+  <!-- ============ STEP1: foto no WhatsApp ============ -->
+  <div class="scene" id="s_step1">
+    <div class="abs phone" id="ph" style="left:260px;top:250px">
+      <div class="bar"><div class="av">MT</div><div><div style="font-size:30px;font-weight:700">Canhotos · Entregas</div><div style="font-size:22px;color:#9fd8c8">online</div></div></div>
+      <div class="chat">
+        <div class="bubble in" style="top:30px" id="b0">Bom dia! Mande a foto do canhoto de cada entrega aqui 📸</div>
+        <div class="bubble" style="top:200px;width:420px" id="b1">
+          <div id="b1img" style="width:396px;height:150px;border-radius:14px;overflow:hidden;position:relative;background:#ddd"></div>
+          <div style="margin-top:8px">NF 123.456 entregue ✅</div>
+          <div class="ticks">10:42 ✓✓</div>
+        </div>
+        <div class="bubble in" style="top:470px" id="b2">✅ Canhoto recebido e validado.<br><b>NF 123.456</b> baixada no sistema.</div>
+      </div>
+      <div class="abs" id="shutter" style="inset:0;background:#fff;opacity:0"></div>
+    </div>
+    <div class="abs pill" id="s1pill" style="left:0;right:0;top:1400px;justify-content:center;color:var(--green);font-size:36px">
+      <span style="background:#0d2a1a;border:2px solid var(--green);padding:14px 28px;border-radius:999px">Sem app novo. Sem treinamento.</span>
+    </div>
+  </div>
+
+  <!-- ============ STEP2: IA lê os campos ============ -->
+  <div class="scene" id="s_step2">
+    <div class="abs" id="s2wrap" style="left:130px;top:300px;width:820px;height:300px">
+      <div class="canhoto abs" id="s2c" style="left:0;top:0"></div>
+      <div class="abs" id="laser" style="left:-10px;width:840px;height:6px;background:var(--green);box-shadow:0 0 30px 8px rgba(34,197,94,.7);top:0"></div>
+      <div class="abs hl" id="hl0" style="border:4px solid var(--green);border-radius:8px;opacity:0"></div>
+      <div class="abs hl" id="hl1" style="border:4px solid var(--green);border-radius:8px;opacity:0"></div>
+      <div class="abs hl" id="hl2" style="border:4px solid var(--green);border-radius:8px;opacity:0"></div>
+      <div class="abs hl" id="hl3" style="border:4px solid var(--green);border-radius:8px;opacity:0"></div>
+    </div>
+    <div class="abs" style="left:130px;top:690px;width:820px" id="fields"></div>
+    <div class="abs" id="aiBadge" style="left:130px;top:640px;font-size:26px;font-weight:800;letter-spacing:.14em;color:var(--green)">◆ LEITURA AUTOMÁTICA COM IA</div>
+  </div>
+
+  <!-- ============ STEP3: cruza com NF-e e dá baixa ============ -->
+  <div class="scene" id="s_step3">
+    <div class="abs card" id="m1" style="left:70px;top:380px;width:440px;padding:30px">
+      <div style="color:var(--mute);font-size:22px;font-weight:700;letter-spacing:.12em">CANHOTO</div>
+      <div class="mono" style="font-size:34px;margin-top:14px;line-height:1.6">NF 123.456<br>10/11/2026<br>Carlos M.</div>
+    </div>
+    <div class="abs card" id="m2" style="left:570px;top:380px;width:440px;padding:30px">
+      <div style="color:var(--mute);font-size:22px;font-weight:700;letter-spacing:.12em">NOTA FISCAL</div>
+      <div class="mono" style="font-size:34px;margin-top:14px;line-height:1.6">NF 123.456<br>Mercado Bom Preço<br>R$ 8.420,00</div>
+    </div>
+    <div class="abs" id="mcheck" style="left:480px;top:470px;width:120px;height:120px;border-radius:50%;background:var(--green);display:flex;align-items:center;justify-content:center;box-shadow:0 0 0 14px rgba(34,197,94,.2);opacity:0">
+      <svg width="70" height="70" viewBox="0 0 24 24" fill="none" stroke="#06210f" stroke-width="3.5" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12.5l4.5 4.5L19 7.5"/></svg>
+    </div>
+    <div class="abs card" id="sys" style="left:70px;top:780px;width:940px;overflow:hidden">
+      <div style="padding:24px 30px;font-size:26px;font-weight:800;letter-spacing:.1em;color:var(--mute);border-bottom:1px solid #22345c">SEU SISTEMA · ENTREGAS</div>
+      <table class="mono"><tbody>
+        <tr><td>NF 123.455</td><td>Atacado Sul</td><td><span class="status" style="background:#0d2a1a;color:var(--green)">ENTREGUE</span></td></tr>
+        <tr id="rowMain"><td>NF 123.456</td><td>Bom Preço</td><td><span class="status" id="st" style="background:#2a2410;color:var(--amber)">EM ROTA</span></td></tr>
+        <tr><td>NF 123.457</td><td>Casa Nova</td><td><span class="status" style="background:#2a2410;color:var(--amber)">EM ROTA</span></td></tr>
+      </tbody></table>
+    </div>
+  </div>
+
+  <!-- ============ ALERT ============ -->
+  <div class="scene" id="s_alert">
+    <div class="abs card" id="al" style="left:70px;top:420px;width:940px;padding:36px 40px;border-color:#78530c;background:#1d1608">
+      <div style="display:flex;gap:28px;align-items:flex-start">
+        <div style="width:96px;height:96px;flex:none;border-radius:24px;background:var(--amber);display:flex;align-items:center;justify-content:center">
+          <svg width="60" height="60" viewBox="0 0 24 24" fill="none" stroke="#1d1608" stroke-width="2.6" stroke-linecap="round"><path d="M12 3l10 18H2z"/><path d="M12 10v5M12 18v.5"/></svg>
+        </div>
+        <div>
+          <div style="color:#fcd34d;font-size:24px;font-weight:800;letter-spacing:.12em">ATENÇÃO · AGORA</div>
+          <div style="font-size:42px;font-weight:800;margin-top:10px;line-height:1.2">NF 123.789: canhoto sem assinatura</div>
+          <div style="font-size:30px;color:#d6c7a1;margin-top:12px">Motorista e financeiro avisados.</div>
+        </div>
+      </div>
+    </div>
+    <div class="abs" id="al2" style="left:70px;top:800px;width:940px">
+      <div class="card" style="padding:30px 40px;display:flex;align-items:center;gap:26px;font-size:34px;font-weight:700">
+        <span style="width:24px;height:24px;border-radius:50%;background:var(--amber);flex:none"></span> Divergência de nota? Você fica sabendo.
+      </div>
+      <div class="card" style="padding:30px 40px;display:flex;align-items:center;gap:26px;font-size:34px;font-weight:700;margin-top:24px">
+        <span style="width:24px;height:24px;border-radius:50%;background:var(--amber);flex:none"></span> Canhoto faltando? Cobrado no mesmo dia.
+      </div>
+    </div>
+  </div>
+
+  <!-- ============ RESULT ============ -->
+  <div class="scene" id="s_result">
+    <div class="abs card" id="rs" style="left:70px;top:270px;width:940px;padding:34px">
+      <div style="display:flex;align-items:center;gap:22px;background:#0a1328;border:2px solid #2a3d66;border-radius:18px;padding:22px 26px">
+        <svg width="46" height="46" viewBox="0 0 24 24" fill="none" stroke="#8a98b3" stroke-width="2.5"><circle cx="11" cy="11" r="7"/><path d="M20 20l-4-4"/></svg>
+        <span class="mono" style="font-size:40px" id="rq"></span>
+      </div>
+      <div id="rres" style="margin-top:28px;display:flex;gap:26px;align-items:center;opacity:0">
+        <div id="rthumb" style="width:300px;height:110px;border-radius:10px;overflow:hidden;position:relative;flex:none"></div>
+        <div><div style="font-size:36px;font-weight:800">NF 123.456 · Entregue</div><div style="font-size:28px;color:var(--mute);margin-top:6px">10/11 · Carlos M. · assinado</div></div>
+      </div>
+    </div>
+    <div class="abs" id="benefits" style="left:70px;top:740px;width:940px"></div>
+  </div>
+
+  <!-- ============ CTA ============ -->
+  <div class="scene" id="s_cta">
+    <div class="abs big" id="ctaBig" style="left:70px;right:70px;top:300px;font-size:96px">
+      Automação<br>de canhotos<br><span style="color:var(--green)">sob medida.</span>
+    </div>
+    <div class="abs" id="ctaChips" style="left:70px;top:760px;width:940px;display:flex;flex-wrap:wrap;gap:18px"></div>
+    <div class="abs" id="ctaBtn" style="left:70px;top:1060px;width:940px;height:170px;border-radius:999px;background:var(--green);display:flex;align-items:center;justify-content:center;gap:26px;color:#04190b;font-size:52px;font-weight:900;box-shadow:0 30px 80px rgba(34,197,94,.35)">
+      <svg width="70" height="70" viewBox="0 0 24 24" fill="#04190b"><path d="M12 2a10 10 0 00-8.7 14.9L2 22l5.3-1.3A10 10 0 1012 2zm0 18.2a8.2 8.2 0 01-4.2-1.2l-.3-.2-3.1.8.8-3-.2-.3A8.2 8.2 0 1112 20.2zm4.5-6.1c-.2-.1-1.5-.7-1.7-.8s-.4-.1-.6.1-.7.8-.8 1-.3.2-.5.1a6.7 6.7 0 01-3.3-2.9c-.3-.4.3-.4.8-1.4a.5.5 0 000-.5l-.8-1.9c-.2-.5-.4-.4-.6-.4h-.5a1 1 0 00-.7.3 2.9 2.9 0 00-.9 2.2 5 5 0 001.1 2.7 11.5 11.5 0 004.4 3.9c1.6.7 2.3.8 3.1.6a2.7 2.7 0 001.8-1.2 2.2 2.2 0 00.2-1.2c-.1-.2-.3-.3-.5-.4z"/></svg>
+      Chama no WhatsApp
+    </div>
+  </div>
+
+  <!-- overlays -->
+  <div id="tag"><span id="tagTxt"></span></div>
+  <div id="cap"><p id="capP"></p></div>
+  <div id="flash"></div>
+</div>
+
+<script>
+// ---------- util ----------
+const $ = id => document.getElementById(id);
+const clamp = (x,a=0,b=1)=>Math.min(b,Math.max(a,x));
+const lerp = (a,b,t)=>a+(b-a)*t;
+const ease = t=>{t=clamp(t);return t<.5?4*t*t*t:1-Math.pow(-2*t+2,3)/2};
+const out = t=>{t=clamp(t);return 1-Math.pow(1-t,3)};
+const back = t=>{t=clamp(t);const c1=1.70158,c3=c1+1;return 1+c3*Math.pow(t-1,3)+c1*Math.pow(t-1,2)};
+const prog = (t,a,d)=>clamp((t-a)/d);
+function set(el,o){el=typeof el==='string'?$(el):el;for(const k in o){if(k==='o')el.style.opacity=o[k];else if(k==='tf')el.style.transform=o[k];else el.style[k]=o[k];}}
+// pseudo-random determinístico
+let seed=7;const rnd=()=>{seed=(seed*16807)%2147483647;return (seed-1)/2147483646};
+
+// ---------- construir canhotos ----------
+const SIG = `<svg class="sig" viewBox="0 0 230 70"><path d="M5 50 C25 10,40 60,55 35 S80 15,95 45 S120 55,135 25 S160 40,175 30 S205 45,225 20" stroke="#1e3a8a" stroke-width="3" fill="none" stroke-linecap="round"/></svg>`;
+function canhotoHTML(nf='000.123.456',date='10/11/26',name='Carlos M.',signed=true){
+  return `<div class="t">RECEBEMOS DE DISTRIBUIDORA EXEMPLO LTDA OS PRODUTOS/SERVIÇOS CONSTANTES DA NOTA FISCAL INDICADA AO LADO</div>
+  <div class="row"><div class="box" style="width:180px">DATA DE RECEBIMENTO<span class="hand" style="font-size:30px">${date}</span></div>
+  <div class="box" style="width:400px">IDENTIFICAÇÃO E ASSINATURA DO RECEBEDOR${signed?SIG:''}<span class="hand" style="left:270px;font-size:28px">${name}</span></div></div>
+  <div class="nf">NF-e<b>Nº ${nf.split('.').slice(-2).join('.')}</b><small>SÉRIE 1<br>${nf}</small></div>`;
+}
+['p1c','s2c'].forEach(id=>$(id).innerHTML=canhotoHTML());
+// miniaturas (foto do canhoto)
+['b1img','rthumb'].forEach(id=>{
+  const el=$(id);const w=el.offsetWidth;const s=w/820;
+  el.innerHTML=`<div class="canhoto" style="transform:scale(${s}) rotate(-1.5deg);transform-origin:0 0;position:absolute;left:4px;top:2px;box-shadow:none">${canhotoHTML()}</div><div style="position:absolute;inset:0;background:linear-gradient(120deg,rgba(255,255,255,.0),rgba(80,60,20,.18))"></div>`;
+});
+// pilha do hook
+const pile=$('pile');const PILE=[];
+for(let i=0;i<9;i++){
+  const d=document.createElement('div');d.className='canhoto abs';
+  d.innerHTML=canhotoHTML('000.12'+(3+i)+'.4'+(10+i*7),`0${1+i%9}/11/26`,['Ana P.','João S.','Marcos R.','Bia L.','Rui T.','Edu F.','Lia C.','Davi N.','Carlos M.'][i],i%3!==1);
+  pile.appendChild(d);
+  PILE.push({el:d,x:130+(rnd()-.5)*160,y:860+(rnd()-.5)*260,r:(rnd()-.5)*34,fromX:(rnd()<.5?-1:1)*1300,fromY:(rnd()-.5)*900,rot0:(rnd()-.5)*120});
+}
+// tabela pain2
+const ROWS=[['123.401','04/11','J. Silva','?'],['123.402','04/11','M. Souza','?'],['123.4O3','O5/11','illegível','?'],['123.404','05/11','—','?'],['123.405','06/11','A. Lima','?'],['123.406','??/11','—','?']];
+const tb=document.querySelector('#p2tab tbody');ROWS.forEach(r=>{const tr=document.createElement('tr');r.forEach(()=>{tr.appendChild(document.createElement('td'))});tb.appendChild(tr)});
+// pastas pain3
+$('p3folders').innerHTML=['caixa 2024','pasta motoristas','e-mail?','gaveta'].map(t=>`<div style="padding:12px 20px;border-radius:12px;background:#1a2442;color:#8a98b3;font-size:26px;font-weight:700;text-decoration:line-through">${t}</div>`).join('');
+// campos step2
+const FIELDS=[['Nº da nota','NF 123.456'],['Data de entrega','10/11/2026'],['Recebedor','Carlos M.'],['Assinatura','Detectada']];
+$('fields').innerHTML=FIELDS.map((f,i)=>`<div class="card" id="f${i}" style="margin-bottom:16px;padding:18px 30px;display:flex;align-items:center;justify-content:space-between;opacity:0">
+ <div><div style="color:var(--mute);font-size:24px;font-weight:700;letter-spacing:.1em">${f[0].toUpperCase()}</div><div class="mono" style="font-size:40px;font-weight:700;margin-top:2px">${f[1]}</div></div>
+ <div style="width:66px;height:66px;border-radius:50%;background:var(--green);display:flex;align-items:center;justify-content:center"><svg width="44" height="44" viewBox="0 0 24 24" fill="none" stroke="#06210f" stroke-width="3.5" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12.5l4.5 4.5L19 7.5"/></svg></div></div>`).join('');
+// regiões destacadas sobre o canhoto (coord. relativas a s2wrap)
+const HL=[[640,22,170,256],[26,84,186,124],[226,84,406,124],[226,84,260,124]];
+HL.forEach((r,i)=>set('hl'+i,{left:r[0]-4+'px',top:r[1]-4+'px',width:r[2]+8+'px',height:r[3]+8+'px'}));
+// fluxo turn
+$('flow').insertAdjacentHTML('beforeend',[['📸','Foto',0],['◆','IA lê',1],['✓','Baixa',2]].map(([ic,t,i])=>`<div class="abs" id="fn${i}" style="left:${i*300+60}px;top:40px;width:180px;text-align:center;opacity:0"><div style="width:180px;height:180px;border-radius:44px;background:#0d2a1a;border:3px solid var(--green);display:flex;align-items:center;justify-content:center;font-size:76px;color:var(--green);font-weight:900">${ic}</div><div style="margin-top:16px;font-size:34px;font-weight:800">${t}</div></div>`).join(''));
+// benefícios
+$('benefits').innerHTML=[['Canhoto digital','pesquisável em segundos'],['Entrega comprovada','no mesmo dia'],['Faturamento','sem travar']].map((b,i)=>`<div class="card" id="bn${i}" style="padding:26px 40px;margin-bottom:20px;display:flex;align-items:center;gap:30px;opacity:0">
+  <div style="width:84px;height:84px;flex:none;border-radius:50%;background:var(--green);display:flex;align-items:center;justify-content:center"><svg width="50" height="50" viewBox="0 0 24 24" fill="none" stroke="#06210f" stroke-width="3.5" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12.5l4.5 4.5L19 7.5"/></svg></div>
+  <div><div style="font-size:50px;font-weight:900;letter-spacing:-.02em">${b[0]}</div><div style="font-size:32px;color:var(--mute);font-weight:600;margin-top:4px">${b[1]}</div></div></div>`).join('');
+// chips cta
+$('ctaChips').innerHTML=['Distribuidoras','Transportadoras','Integra com seu ERP/TMS','Foto pelo WhatsApp'].map((c,i)=>`<div class="pill" id="cc${i}" style="background:#0f1a33;border:2px solid #22345c;font-size:32px;opacity:0">${c}</div>`).join('');
+
+// ---------- timeline ----------
+let TL=null, SCENES={};
+const ORDER=['hook','pain1','pain2','pain3','pain4','turn','step1','step2','step3','alert','result','cta'];
+const TAGS={hook:['O PROBLEMA','#ef4444'],pain1:['O PROBLEMA','#ef4444'],pain2:['O PROBLEMA','#ef4444'],pain3:['O PROBLEMA','#ef4444'],pain4:['O PROBLEMA','#ef4444'],turn:['A SOLUÇÃO','#22c55e'],step1:['1 · FOTO','#22c55e'],step2:['2 · LEITURA','#22c55e'],step3:['3 · BAIXA','#22c55e'],alert:['EXCEÇÕES','#f59e0b'],result:['RESULTADO','#22c55e'],cta:['FALE COM A GENTE','#22c55e']};
+function init(tl){
+  TL=tl;
+  // janela de cada cena: do início da 1ª fala (−0.35s) até o início da próxima cena
+  const first={},last={};
+  tl.chunks.forEach(c=>{if(!(c.scene in first))first[c.scene]=c.start;last[c.scene]=c.end});
+  // hook começa em 0
+  ORDER.forEach((s,i)=>{
+    const a=i===0?0:first[s]-0.35; const nxt=ORDER[i+1]; const b=nxt?first[nxt]-0.35:tl.duration;
+    SCENES[s]={a,b,speech:first[s],end:last[s]};
+  });
+  // palavras das legendas
+  tl.chunks.forEach(c=>{
+    const ws=c.caption.split(' ');const tot=ws.reduce((s,w)=>s+w.length+1,0);let acc=0;
+    c.words=ws.map(w=>{const a=c.start+(acc/tot)*(c.end-c.start);acc+=w.length+1;return {w,a,b:c.start+(acc/tot)*(c.end-c.start)}});
+  });
+}
+window.SCENE_TIMES=()=>SCENES;
+
+// ---------- render ----------
+let lastCap=-1;
+function render(t){
+  // fundo
+  const turnA=SCENES.turn.a;
+  const toGreen=ease(prog(t,turnA,1.2));
+  $('glow').style.background=toGreen<.5?'#ef4444':'#22c55e';
+  set('glow',{o:.18+.12*Math.sin(t*1.3)+ (toGreen>0&&toGreen<1? .2*Math.sin(Math.PI*toGreen):0),
+    tf:`translate(${Math.sin(t*.4)*120}px,${Math.cos(t*.33)*160}px) scale(${1+.1*Math.sin(t*.7)})`});
+  set('grid',{tf:`translate(${(t*18)%90}px,${(t*30)%90}px)`});
+  // flash na virada
+  set('flash',{o: .85*Math.max(0,1-Math.abs(t-turnA-0.05)/0.28)});
+
+  // cenas: opacidade de entrada/saída
+  ORDER.forEach(s=>{
+    const S=SCENES[s];const el=$('s_'+s);
+    const fi=s==='hook'?1:out(prog(t,S.a,.35));const fo=1-ease(prog(t,S.b-.3,.3));
+    const vis=(t>=S.a-0.01&&t<S.b+0.01)?fi*(s==='cta'?1:fo):0;
+    el.style.opacity=vis; el.style.display=vis>0.001?'block':'none';
+    if(vis>0.001) R[s](t-S.a,S,t);
+  });
+
+  // rótulo
+  let cur=ORDER.find(s=>t>=SCENES[s].a&&t<SCENES[s].b)||'cta';
+  const [tg,col]=TAGS[cur];
+  if($('tagTxt').textContent!==tg){$('tagTxt').textContent=tg}
+  $('tagTxt').style.color=col;
+  const S=SCENES[cur];const tagIn=out(prog(t,S.a,.4));
+  set('tag',{o: t<0.3?prog(t,0,.3):1, tf:`translateY(${(1-tagIn)*(tg===$('tagTxt').dataset.prev?0:0)}px)`});
+
+  // legendas (palavra atual destacada)
+  const c=TL.chunks.find(c=>t>=c.start-0.12&&t<=c.end+0.35);
+  const p=$('capP');
+  if(!c){p.innerHTML='';lastCap=-1;}
+  else{
+    const ci=TL.chunks.indexOf(c);
+    if(ci!==lastCap){p.innerHTML=c.words.map((w,i)=>`<span class="w" id="w${i}">${w.w}</span>`).join('');lastCap=ci;}
+    const ap=out(prog(t,c.start-0.12,.2));
+    set(p,{o:ap*(1-prog(t,c.end+0.2,.15)),tf:`translateY(${(1-ap)*30}px)`});
+    c.words.forEach((w,i)=>{const el=$('w'+i);const on=t>=w.a-0.04;const act=t>=w.a-0.04&&t<w.b;
+      el.style.color=act?(SCENES.turn.a<=t&&cur!=='alert'?'#4ade80':cur==='alert'?'#fbbf24':'#fca5a5'):'#ffffff';
+      el.style.opacity=on?1:.45;
+      el.style.transform=act?'scale(1.06)':'scale(1)';});
+  }
+}
+
+const R={
+  hook(l,S){
+    PILE.forEach((p,i)=>{const k=back(prog(l,0.05+i*0.17,.55));
+      set(p.el,{left:lerp(p.fromX+p.x,p.x,k)+'px',top:lerp(p.y+p.fromY,p.y,k)+'px',tf:`rotate(${lerp(p.rot0,p.r,k)}deg) scale(${lerp(1.1,1,k)})`,o:k>0?1:0})});
+    const a=back(prog(l,0.1,.5)),b=back(prog(l,0.55,.5));
+    set('hk1',{tf:`translateY(${(1-a)*80}px)`,o:clamp(a)});
+    set('hk2',{tf:`scale(${lerp(1.6,1,b)}) rotate(${(1-b)*-6}deg)`,o:clamp(b)});
+    set('pile',{tf:`translateY(${-l*6}px)`});
+  },
+  pain1(l,S,t){
+    const goneAt=TL.chunks.find(c=>c.caption.startsWith('…ou')).start-S.a;
+    const w=out(prog(l,0.15,.6)); // entra
+    const crumple=ease(prog(l,0.9,1.0));
+    set('p1wrap',{tf:`translateY(${(1-w)*200}px) rotate(${-3+crumple*7}deg) scale(${1-crumple*.12})`,o:w});
+    $('p1c').style.filter=`blur(${crumple*3.2}px) sepia(${crumple*.7}) contrast(${1-crumple*.25})`;
+    $('p1c').style.transform=`skewX(${crumple*-6}deg) skewY(${crumple*3}deg)`;
+    $('p1c').style.clipPath=crumple>0?`polygon(0 ${crumple*6}%, 18% 0, 46% ${crumple*5}%, 72% 0, 100% ${crumple*8}%, 98% 55%, 100% ${100-crumple*6}%, 64% 100%, 30% ${100-crumple*7}%, 0 100%, 2% 48%)`:'none';
+    const st=back(prog(l,1.6,.35));
+    set('p1stamp',{o:clamp(st*2),tf:`rotate(-12deg) scale(${lerp(2.2,1,st)})`});
+    const g=ease(prog(l,goneAt,.7));
+    if(g>0){set('p1wrap',{tf:`translate(${g*1100}px,${-g*300}px) rotate(${g*40}deg) scale(${1-crumple*.12})`,o:w*(1-g*.8)});}
+    set('p1ghost',{o:out(prog(l,goneAt+.35,.4))*.9,tf:`scale(${lerp(.9,1,out(prog(l,goneAt+.35,.4)))})`});
+  },
+  pain2(l){
+    const a=out(prog(l,0,.5));set('p2sheet',{tf:`translateY(${(1-a)*120}px)`,o:a});
+    set('clock',{tf:`scale(${back(prog(l,.25,.5))})`});
+    $('mHand').style.transform=`rotate(${l*900}deg)`;$('hHand').style.transform=`rotate(${l*75}deg)`;
+    // digitação
+    const cps=26; let budget=Math.max(0,(l-.4)*cps);
+    [...tb.rows].forEach((tr,ri)=>{ROWS[ri].forEach((txt,ci)=>{const n=Math.min(txt.length,Math.floor(budget));budget-=txt.length+1;
+      const td=tr.cells[ci];const s=txt.slice(0,Math.max(0,n));td.textContent=s;td.style.color=(ci===3?'#f59e0b':(txt.includes('?')||txt.includes('—')||txt.includes('illeg')?'#fca5a5':'#e5ecf7'))})});
+  },
+  pain3(l,S){
+    const a=back(prog(l,0,.45));set('p3msg',{tf:`translateX(${(1-a)*-300}px)`,o:clamp(a)});
+    const b=out(prog(l,.5,.5));set('p3search',{tf:`translateY(${(1-b)*100}px)`,o:b});
+    const q='NF 123.456';const n=Math.floor(clamp((l-1.0)/0.7)*q.length);$('p3q').textContent=q.slice(0,n);
+    $('p3cur').style.opacity=(Math.floor(l*3)%2)?1:0;
+    // spinner -> não encontrado
+    const r=prog(l,2.1,.3);set('p3res',{o:r,tf:`translateX(${Math.sin(clamp(l-2.1,0,.5)*60)*(1-prog(l,2.1,.5))*16}px)`});
+    set('p3folders',{o:out(prog(l,2.6,.4))});
+  },
+  pain4(l){
+    const a=back(prog(l,0.05,.45)),b=back(prog(l,0.45,.45));
+    const shake=(x,s)=>Math.sin(x*70)*Math.max(0,1-(x-s)/0.4)*(x>s?14:0);
+    set('p4a',{tf:`translateX(${(1-a)*-900+shake(l,.5)}px)`,o:clamp(a)});
+    set('p4b',{tf:`translateX(${(1-b)*900+shake(l,.9)}px)`,o:clamp(b)});
+  },
+  turn(l){
+    const a=out(prog(l,.15,.5));set('tBig',{tf:`translateY(${(1-a)*60}px) scale(${lerp(.92,1,a)})`,o:a});
+    $('flowPath').style.strokeDashoffset=600*(1-ease(prog(l,1.0,1.1)));
+    [0,1,2].forEach(i=>{const k=back(prog(l,.8+i*.45,.45));set('fn'+i,{o:clamp(k),tf:`scale(${k})`})});
+  },
+  step1(l){
+    const a=out(prog(l,0,.6));set('ph',{tf:`translateY(${(1-a)*400}px) rotate(${(1-a)*6}deg)`,o:a});
+    set('b0',{o:out(prog(l,.3,.3))});
+    // obturador e envio
+    set('shutter',{o:Math.max(0,1-Math.abs(l-1.25)/.18)*.9});
+    const s=back(prog(l,1.45,.45));set('b1',{o:clamp(s),tf:`scale(${lerp(.6,1,s)})`,transformOrigin:'100% 0'});
+    const r=back(prog(l,2.5,.4));set('b2',{o:clamp(r),tf:`scale(${lerp(.7,1,r)})`,transformOrigin:'0 0'});
+    set('s1pill',{o:0});
+  },
+  step2(l,S){
+    const a=out(prog(l,0,.5));set('s2wrap',{o:a,tf:`scale(${lerp(.9,1,a)})`});set('aiBadge',{o:out(prog(l,.2,.4))});
+    const sc=prog(l,.35,1.1);set('laser',{top:(sc*300)+'px',o:sc>0&&sc<1?1:0});
+    const T=[1.0,1.75,2.55,3.4];
+    T.forEach((tt,i)=>{const k=back(prog(l,tt,.4));set('f'+i,{o:clamp(k*1.5),tf:`translateX(${(1-k)*120}px)`});
+      set('hl'+i,{o:Math.max(0,1-Math.abs(l-tt-0.15)/0.7)});});
+  },
+  step3(l){
+    const a=out(prog(l,0,.45));set('m1',{o:a,tf:`translateX(${(1-a)*-200}px)`});set('m2',{o:a,tf:`translateX(${(1-a)*200}px)`});
+    const c=back(prog(l,.9,.4));set('mcheck',{o:clamp(c),tf:`scale(${c})`});
+    const s=out(prog(l,1.1,.45));set('sys',{o:s,tf:`translateY(${(1-s)*120}px)`});
+    const done=l>=1.9;const st=$('st');st.textContent=done?'ENTREGUE ✓':'EM ROTA';
+    st.style.background=done?'#0d2a1a':'#2a2410';st.style.color=done?'#22c55e':'#f59e0b';
+    st.style.transform=`scale(${done?lerp(1.35,1,out(prog(l,1.9,.35))):1})`;
+    $('rowMain').style.background=`rgba(34,197,94,${.22*Math.max(0,1-Math.abs(l-2.1)/0.9)})`;
+  },
+  alert(l){
+    const a=back(prog(l,0.05,.45));set('al',{o:clamp(a),tf:`translateY(${(1-a)*-260}px)`});
+    const sh=Math.sin(l*60)*Math.max(0,1-(l-.5)/.35)*(l>.5?8:0);$('al').style.marginLeft=sh+'px';
+    const b=out(prog(l,.9,.5));set('al2',{o:b,tf:`translateY(${(1-b)*80}px)`});
+  },
+  result(l){
+    const a=out(prog(l,0,.45));set('rs',{o:a,tf:`translateY(${(1-a)*80}px)`});
+    const q='123456';$('rq').textContent=q.slice(0,Math.floor(clamp((l-.4)/.4)*q.length));
+    const r=back(prog(l,.95,.35));set('rres',{o:clamp(r),tf:`scale(${lerp(.9,1,r)})`});
+    const sub=TL.chunks.filter(c=>c.scene==='result');const s2=sub[1].start-SCENES.result.a;
+    [1.3,s2+.1,s2+1.6].forEach((tt,i)=>{const k=back(prog(l,tt,.45));set('bn'+i,{o:clamp(k),tf:`translateX(${(1-k)*-200}px)`})});
+  },
+  cta(l){
+    const a=out(prog(l,0,.6));set('ctaBig',{o:a,tf:`translateY(${(1-a)*60}px)`});
+    [0,1,2,3].forEach(i=>{const k=back(prog(l,.9+i*.3,.4));set('cc'+i,{o:clamp(k),tf:`scale(${k})`})});
+    const b=back(prog(l,5.4,.5));const pulse=1+.035*Math.sin(Math.max(0,l-6)*6);
+    set('ctaBtn',{o:clamp(b),tf:`scale(${lerp(.7,1,b)*pulse})`});
+  }
+};
+window.init=init; window.render=render;
+</script>
+</body>
+</html>

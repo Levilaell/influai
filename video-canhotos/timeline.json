@@ -1,0 +1,95 @@
+{
+ "duration": 54.057,
+ "chunks": [
+  {
+   "scene": "hook",
+   "caption": "Quantos canhotos se perderam na sua operação esse mês?",
+   "start": 0.6,
+   "end": 3.577
+  },
+  {
+   "scene": "pain1",
+   "caption": "O motorista volta com o papel amassado, ilegível…",
+   "start": 4.027,
+   "end": 6.883
+  },
+  {
+   "scene": "pain1",
+   "caption": "…ou nem volta.",
+   "start": 7.063,
+   "end": 8.064
+  },
+  {
+   "scene": "pain2",
+   "caption": "Alguém passa horas digitando tudo na mão.",
+   "start": 8.514,
+   "end": 10.978
+  },
+  {
+   "scene": "pain3",
+   "caption": "E quando o cliente contesta a entrega, ninguém acha o comprovante.",
+   "start": 11.428,
+   "end": 15.087
+  },
+  {
+   "scene": "pain4",
+   "caption": "Resultado: faturamento travado e cobrança atrasada.",
+   "start": 15.537,
+   "end": 18.552
+  },
+  {
+   "scene": "turn",
+   "caption": "A gente automatiza isso, de ponta a ponta.",
+   "start": 19.002,
+   "end": 21.341
+  },
+  {
+   "scene": "step1",
+   "caption": "O motorista só tira uma foto do canhoto, pelo WhatsApp.",
+   "start": 21.791,
+   "end": 24.899
+  },
+  {
+   "scene": "step2",
+   "caption": "A IA lê o número da nota, a data, quem recebeu, e confere a assinatura.",
+   "start": 25.349,
+   "end": 30.395
+  },
+  {
+   "scene": "step3",
+   "caption": "Cruza com a nota fiscal e já dá baixa no seu sistema.",
+   "start": 30.845,
+   "end": 33.854
+  },
+  {
+   "scene": "alert",
+   "caption": "Se algo não bate, seu time é avisado na hora.",
+   "start": 34.304,
+   "end": 36.954
+  },
+  {
+   "scene": "result",
+   "caption": "Canhoto digital, encontrado em segundos.",
+   "start": 37.404,
+   "end": 39.794
+  },
+  {
+   "scene": "result",
+   "caption": "Entrega comprovada no mesmo dia e faturamento sem travar.",
+   "start": 39.974,
+   "end": 43.533
+  },
+  {
+   "scene": "cta",
+   "caption": "Feito sob medida pra sua distribuidora ou transportadora, integrado ao que você já usa.",
+   "start": 43.983,
+   "end": 49.156
+  },
+  {
+   "scene": "cta",
+   "caption": "Chama a gente no WhatsApp e veja funcionando.",
+   "start": 49.336,
+   "end": 51.857
+  }
+ ]
+}
